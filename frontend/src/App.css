@@ -10,7 +10,10 @@
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   height: 80px; /* Ensure enough height */
+  font-family: 'Poppins', sans-serif;
 }
+
+
 /* Navbar Collapse on Smaller Screens */
 .navbar-collapse {
   justify-content: center;
@@ -32,19 +35,24 @@
   
 }
 
+
 .navbar-nav .nav-link {
-  font-size: 1.5rem; /* Larger font size for links */
-  background-color: transparent !important; /* Removes white background */
+  font-size: 1.5rem; /* Increase font size */
+  color: black !important; /* default text color */
   transition: color 0.3s ease-in-out;
-  color: black !important; /* Ensures text is visible */
-  
+  background-color: transparent !important; /* no background */
 }
 
 .navbar-nav .nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.2); /* Optional: Adds a slight hover effect */
-  color: black;
-  text-decoration: underline;
-  transition: width 0.5s ease-in-out, left 0.3s ease-in-out; 
+  color: white !important;
+  border-radius: 8px; /* optional */
+  
+}
+
+.navbar-nav .nav-link.active {
+  color: white !important;
+  border-radius: 8px; /* optional */
+    position: relative;
 }
 
 
@@ -52,7 +60,17 @@
 .navbar .navbar-nav .nav-item.dropdown {
   position: relative; /* For positioning dropdown menu */
 }
-
+.navbar-nav .nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: -5px; /* controls space below text */
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: black;
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
+}
 
 
 .navbar-nav .nav-link:hover {
@@ -383,7 +401,6 @@
 }
 /* ===== LEFT TEXT SECTION ===== */
 .Caption {
-  margin-top: 250px;
   font-size: 3.5rem; /* Large text for impact */
   font-weight: bold;
   line-height: 1.2;
@@ -476,24 +493,23 @@
   padding-left: 100px; /* Moves everything slightly to the right */
  
 }
+/* Logo */
+
+
 
 /* Login Card */
 .login-card {
   background: white;
-  padding: 30px;
+  padding: 10px 30px;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   margin-left: 50px; /* Adjust this value to move it more or less */
 }
-
-/* Logo */
 .logo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px
-  
+  position: relative;
+  top: 40px; /* Increase this value to move the logo further down */
 }
+
 /* Centering the text inside the form */
 .title, .subtitle {
   text-align: center; /* Center the text */
@@ -512,7 +528,7 @@
 .subtitle {
   font-size: 20px;
   color: 463C3C;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 /* Form */
 .form {
@@ -533,6 +549,7 @@
   padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ccc;
+  background: #e8e8e8;
   border-radius: 15px;
   font-size: 14px;
 }
@@ -642,6 +659,7 @@
 
 .sign-in-btn:hover {
   background-color: #2e6d2e;
+  color: whitesmoke;
 }
 
 /* Signup Link */
@@ -766,7 +784,7 @@ Sign UP Design */
 
 /* Signup Card */
 .signup-card {
-  width: 400px; /* Match the login card width */
+  width: 590px; /* Match the login card width */
   background: white;
   padding: 30px; /* Match login padding */
   border-radius: 10px;
@@ -790,12 +808,22 @@ Sign UP Design */
 
 
 /* Logo */
-.logo-container {
+.logo-containers {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px
+ 
+  
 }
+
+.small-logo {
+  width: 50px;
+  height: auto;
+  margin-bottom: 18px;
+  margin-left: 190px;
+  
+  
+  
+}
+
 /* Title */
 .titles {
   font-size: 25px;
@@ -833,7 +861,6 @@ label {
   display: flex;
   align-items: center;
   position: relative;
-  
 }
 
 .eye-icon {
@@ -918,18 +945,15 @@ label {
 }
 
 /* Logo */
-.logo-containers {
+.logo-container {
   display: flex;
-  justify-content: center; /* Centers horizontally */
-  align-items: center; /* Centers vertically */
-  width: 100%; /* Full width */
-  height: 100px; /* Adjust as needed */
+  justify-content: center;
+  
+  margin-bottom: 50px;
 }
 
-/* Logo Image */
-.small-logo {
-  width: 80px; /* Adjust logo size */
-  height: auto; /* Maintains aspect ratio */
+.form-logo {
+  width: 80px;
   
 }
 
@@ -1019,7 +1043,6 @@ label {
   position: absolute;
   left: 825px;
   top: 125px;
-
 }
 
 .hero-pic {
@@ -1150,6 +1173,116 @@ label {
   color: grey;
   line-height: 1.5;
 }
+.post-input-card {
+  cursor: pointer;
+  transition: 0.3s;
+  border: 1px solid green; /* Green border */
+  border-radius: 10px;
+}
+
+.post-input-card:hover {
+  background-color: #f0f2f5;
+}
+
+.post-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+.post-input .avatar {
+  width: 40px;
+  height: 40px;
+  background-color: green; /* Green avatar */
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.post-input-field {
+  width: 100%;
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+
+.post-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.author-name {
+  font-weight: bold;
+}
+
+.post-textarea {
+  width: 100%;
+  border: 1px solid green; /* Green border */
+  padding: 10px;
+  border-radius: 5px;
+  outline: none;
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.add-media-btn {
+  border: 1px solid green; /* Green border */
+  color: green;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.add-media-btn:hover {
+  background-color: #e6ffe6; /* Light green on hover */
+}
+
+.add-post-container {
+  margin-top: 10px;
+}
+
+.add-post-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 1px solid green; /* Green border */
+  border-radius: 5px;
+  padding: 10px;
+  color: green;
+}
+
+.add-post-btn:hover {
+  background-color: #e6ffe6;
+}
+.add-post-icons {
+  display: flex;
+  gap: 10px;
+  align-items: center; /* Ensures vertical alignment */
+}
+
+.post-icon {
+  cursor: pointer;
+  vertical-align: middle;
+}
 
 
 /* Profile CSS */
@@ -1187,6 +1320,37 @@ label {
   padding: 0;
   position: relative;
   top: -40px; /* Moves the content up to overlap */
+}
+
+/* Smaller dropdown box */
+.dropdown-menu {
+  min-width: 160px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Dropdown items with line and hover transition */
+.dropdown-menu .dropdown-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: white;
+  color: #212529;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* No border on last item */
+.dropdown-menu .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+/* Hover effect: green background and white text */
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus,
+.dropdown-menu .dropdown-item.active {
+  background-color: #28a745 !important;
+  color: #fff !important;
 }
 
 
@@ -1254,6 +1418,18 @@ border: 2px solid green !important; /* Green border */
   font-size: 12px;
   color: #666;
 }
+
+.events-scroll-wrapper {
+  max-height: 488px; /* or any height you prefer */
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.events-scroll-wrapper::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 
 /* What's on your mind? */
 .what-form input {
@@ -1422,12 +1598,51 @@ button:hover {
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
+  padding: 0.75rem 1rem;
   cursor: pointer;
 }
 
 .recent-activity-item:hover {
   color: green;
 }
+
+.green-checkbox .form-check-input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: white;
+  border: 2px solid green;
+  border-radius: 4px;
+  
+  transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.green-checkbox .form-check-input:checked {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.green-checkbox .form-check-input:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Hide default IE/Edge checkmark */
+.green-checkbox .form-check-input::-ms-check {
+  display: none;
+}
+
 
 /* Freedom cSS */
 /* FreedomWall.css */
@@ -1702,7 +1917,6 @@ button:hover {
   margin-right: 8px;
 }
 
-/* Blog Grid - Aligned at the Bottom */
 .blog-grid {
   display: flex;
   gap: 20px;
@@ -1742,6 +1956,7 @@ button:hover {
   font-weight: bold;
   color: #333;
   margin-bottom: 5px;
+  text-align: left;
 }
 
 .blog-card .blog-link {
@@ -1774,6 +1989,8 @@ button:hover {
     height: auto;
   }
 }
+
+
 /* Meditation CSS */
 /* Container */
 .meditation-container {
@@ -1828,25 +2045,29 @@ button:hover {
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
-  align-items: flex-end; /* Aligns cards at the bottom */
+  align-items: stretch; /* Ensures all cards have the same height */
 }
 
 /* Cards */
 .guide-card {
+  flex: 1 1 calc(33.333% - 20px); /* 3 columns */
+  max-width: calc(33.333% - 20px);
   display: flex;
   justify-content: center;
 }
 
 .equal-height-card {
-  width: 300px;
+  width: 100%;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid #ddd;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  justify-content: space-between; /* Ensures equal spacing */
 }
 
+/* Image Styling */
 .image-placeholder {
   width: 100%;
   height: 180px;
@@ -1861,13 +2082,16 @@ button:hover {
   object-fit: cover;
 }
 
+/* Card Body */
 .card-bodys {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-end; /* Align text to the bottom */
+  padding: 15px;
 }
 
+/* Category Tag */
 .guide-categorys {
   display: inline-block;
   background: #28a745;
@@ -1876,7 +2100,31 @@ button:hover {
   padding: 4px 10px;
   border-radius: 20px;
   margin-bottom: 8px;
+  text-align: center;
 }
+
+/* Title */
+.card-title {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Responsive Layout */
+@media (max-width: 992px) {
+  .guide-card {
+    flex: 1 1 calc(50% - 20px); /* 2 columns */
+    max-width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 600px) {
+  .guide-card {
+    flex: 1 1 100%; /* 1 column */
+    max-width: 100%;
+  }
+}
+
 /* Challenges CSS */
 .challenges-container {
   max-width: 1100px;
@@ -1920,53 +2168,53 @@ button:hover {
   color: #666;
 }
 
-/* Challenges Grid */
 .challenges-grid {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
+  gap: 20px; /* Spacing between cards */
+  justify-content: space-between; /* Ensures equal spacing */
 }
 
-/* Challenge Cards */
 .challenge-card {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .challenge {
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #ddd;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  text-align: left;
-  padding: 15px;
-}
-/* Green Button */
-.challenge-button {
-  background-color: rgb(25, 182, 33) !important;
-  border-color: green !important;
-  color: white !important;
-}
-
-.challenge-button:hover {
-  background-color: darkgreen !important;
-  border-color: darkgreen !important;
-}
-
-/* Dark Green Progress Bar */
-.main-progress .progress-bar {
-  background-color: darkgreen !important;
-}
-
-
-.card-header {
   display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 350px; /* Ensure uniform height */
+  padding-bottom: 20px;
+}
+
+.challenge .card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  font-size: 12px;
+}
+
+/* Aligns Progress Tag to Right */
+.status-tag {
+  margin-left: auto; /* Pushes it to the right */
+  background-color: yellow;
+  padding: 3px 8px;
   font-weight: bold;
-  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+/* Aligns Button to Bottom */
+.challenge-button {
+  width: 100%;
+  margin-top: auto; /* Pushes button to bottom */
+}
+
+/* Makes All Cards Equal Height */
+@media (min-width: 992px) {
+  .challenge-card {
+    flex: 1 1 calc(33.333% - 20px); /* Ensures 3-column layout */
+  }
 }
 
 .type-tag {
@@ -1983,8 +2231,7 @@ button:hover {
 }
 
 .status-tag.progress {
-  background: #28a745;
-  height: 30px;
+  background: yellow;
 }
 
 .status-tag.notstarted {
@@ -2028,13 +2275,335 @@ button:hover {
 
 /* Themed Card Colors */
 .blue {
-  border-top: 4px solid #28a745;
+  border-top: 5px solid #007bff;
 }
 
 .purple {
-  border-top: 4px solid #28a745;
+  border-top: 5px solid #800080;
 }
 
 .lightblue {
-  border-top: 4px solid #28a745;
+  border-top: 5px solid #6cace4;
+}
+/* //Dashboard CSS// */
+/* Dashboard.css */
+
+.dashboard-wrapper {
+  background-color: #f6fef6;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+}
+
+.sidebar {
+  background-color: white;
+  min-height: 100vh;
+  padding-top: 2rem;
+  border-radius: 30px 0 0 30px;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.icon-wrapper {
+  padding: 0.7rem;
+  border-radius: 50%;
+  background: #f1fdf3;
+  color: #4CAF50;
+  transition: all 0.3s ease;
+}
+
+.icon-wrapper.active {
+  background: #4CAF50;
+  color: white;
+}
+
+.dots-wrapper {
+  position: relative;
+  margin-top: auto;
+  padding-top: 3rem;
+  cursor: pointer;
+}
+
+.green-overlay {
+  background-color: #4CAF50;
+  padding: 1rem;
+  border-radius: 16px;
+  position: absolute;
+  bottom: 2rem;
+  left: 2.5rem;
+  z-index: 10;
+  min-width: 180px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.95);
+  transition: all 0.3s ease-in-out;
+}
+
+.green-overlay.show {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+.dots-icon {
+  color: #4CAF50;
+}
+
+.dots-icon-white {
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.icon-actions p {
+  margin: 0.25rem 0;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.overview-card {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  background-color: white;
+}
+
+.rounded-box {
+  border: none;
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.friends-list {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  background-color: white;
+}
+
+.activity-card {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+  background-color: white;
+}
+
+.search-bar {
+  width: 250px;
+}
+
+.card-title {
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.text-danger {
+  color: #e74c3c !important;
+}
+.dashboard-wrapper {
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  background-color: #ffffff;
+  border-radius: 30px 0 0 30px;
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.icon-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #f0fbf2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4CAF50;
+  transition: all 0.3s ease;
+}
+
+.icon-wrapper.active {
+  background-color: #4CAF50;
+  color: #ffffff;
+}
+
+/* DOT MENU */
+.dots-wrapper {
+  margin-top: auto;
+  padding: 2rem 0;
+  cursor: pointer;
+}
+
+.dot-menu-window {
+  position: absolute;
+  left: 80px;
+  top: 80px;
+  background-color: #4CAF50;
+  color: white;
+  width: 200px;
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.dot-menu-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+.dot-menu-body .menu-item {
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.dot-menu-body .menu-item:hover {
+  opacity: 0.8;
+}
+
+/* SEARCH BAR */
+.search-bar {
+  max-width: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.search-bar .form-control,
+.search-bar .input-group-text {
+  background-color: #fff;
+  border: none;
+}
+
+/* CARD STYLING */
+.overview-card,
+.rounded-box,
+.friends-list,
+.activity-card {
+  border: none;
+  border-radius: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+}
+
+.rounded-box.bg-success {
+  background: linear-gradient(135deg, #4CAF50, #81c784);
+  color: white;
+}
+
+.rounded-box.bg-light {
+  background-color: #f9f9f9;
+}
+
+/* FRIEND LIST */
+.friends-list h6 {
+  font-weight: 600;
+}
+
+.friends-list .list-group-item {
+  border: none;
+  padding-left: 0;
+  font-size: 0.9rem;
+}
+
+/* PROGRESS BAR */
+.progress {
+  height: 10px;
+  border-radius: 6px;
+}
+
+.progress-bar {
+  background-color: #4CAF50;
+}
+.overview-card {
+  background: #e9f5ec;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.rounded-box.bg-success {
+  background: #4CAF50 !important;
+  color: #fff !important;
+  border: none;
+}
+
+.rounded-box.bg-light {
+  background: #f0fdf4 !important;
+  border: 1px solid #c3e6cb;
+}
+
+.friends-list {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.activity-card {
+  background: #e8f5e9;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+/* //Dashboard */
+
+/* Add this to your CSS file */
+.custom-progress-bar {
+  background-color: #388e3c !important; /* your custom green */
+  height: 30px !important;
+  border-radius: 15px !important;
+  font-weight: bold;
+  font-size: 1.1rem;
+  line-height: 30px;
+}
+
+
+
+
+.thick-progress {
+  height: 20px;
+ 
+}
+
+.thick-progress .progress-bar {
+  height: 70%;
+  line-height: 1000px;
+  font-size: 10px;
+  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
+  justify-content: center;
 }

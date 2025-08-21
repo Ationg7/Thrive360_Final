@@ -22,7 +22,7 @@ const WellnessBlog = () => {
 
       {/* Featured Blog */}
       <div className="featured-blog">
-        <img src="https://i.pinimg.com/474x/1e/e6/6a/1ee66a4517d068f5db3b0443684b748b.jpg" alt="Featured Blog" />
+        <img src="https://i.pinimg.com/474x/78/c4/96/78c496569c717b65d4c8aca12ce42556.jpg" alt="Featured Blog" />
         <div className="featured-blog-content">
           <div className="featured-category">
             <span>Mental Health</span>
@@ -39,27 +39,27 @@ const WellnessBlog = () => {
       <div className="blog-grid">
         {[
           {
-            title: "Finding Balance: How to Manage Academic Stress",
+            title: "Practical Strategies for Managing Anxiety and Stress",
             category: "Mental Health",
-            image: "https://i.pinimg.com/474x/1e/e6/6a/1ee66a4517d068f5db3b0443684b748b.jpg",
+            image: "https://i.pinimg.com/474x/a9/0f/ba/a90fba4eef258ca5cdec3abdb479fe91.jpg",
             link: "#",
           },
           {
             title: "Brain Foods: Eating for Academic Success",
             category: "Mental Health",
-            image: "https://i.pinimg.com/474x/86/6a/d0/866ad0b1e99a5a6a7809ebe4801b2147.jpg",
+            image: "https://i.pinimg.com/736x/0e/70/74/0e70748f2880aef17fd365b70ba1b00a.jpg",
             link: "#",
           },
           {
             title: "The Student’s Guide to Quality Sleep",
             category: "Mental Health",
-            image: "https://i.pinimg.com/474x/0b/70/38/0b70385eece9929f2460e7e18f8a15e5.jpg",
+            image: "https://i.pinimg.com/736x/c7/41/eb/c741ebc6b8474138afe46d5361dfe443.jpg",
             link: "#",
           },
           {
-            title: "The Student’s Guide to Quality Sleep",
+            title: "The Power of Self-Care: A Guide to Better Mental Health",
             category: "Mental Health",
-            image: "https://i.pinimg.com/474x/1e/3e/88/1e3e8884e34fa76dfcfe969d1ec0bb88.jpg",
+            image: "https://i.pinimg.com/474x/48/0e/b8/480eb8e49b1eb779a152b201264eb84b.jpg",
             link: "#",
           },
          

@@ -15,7 +15,7 @@ function Footer() {
         <a href="#services">About</a>
         </div>
         <div className="footer-right">
-        <span>Developed by: Ationg,Ferlita & Sanchez, Chanlyn</span>
+        <span>Develop by: Ationg,Ferlita & Sanchez, Chanlyn</span>
         
         </div>
     </footer>
