@@ -16,6 +16,7 @@ import Meditation from "./Pages/Meditation";
 import Challenges from "./Pages/Challenges";
 import Landing from "./Pages/Landing";
 import WellnessBlog from "./Pages/WellnessBlog";
+import GuideDetail from "./Pages/GuideDetail"; // ✅ add this import
 
 function Layout() {
   const location = useLocation();
@@ -38,6 +39,7 @@ function Layout() {
         <Route path="/WellnessBlog" element={<WellnessBlog />} />
         <Route path="/Challenges" element={<Challenges />} />
         <Route path="/Profile" element={<Profile />} />
+        <Route path="/guide-detail" element={<GuideDetail />} /> {/* ✅ new detail page */}
       </Routes>
       <Footer />
     </>
