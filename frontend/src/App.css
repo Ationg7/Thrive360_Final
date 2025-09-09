@@ -67,7 +67,11 @@
   left: 0;
   width: 100%;
   height: 3px;
+<<<<<<< HEAD
   
+=======
+  background-color: black;
+>>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
   border-radius: 2px;
   transition: all 0.3s ease-in-out;
 }
@@ -1249,7 +1253,10 @@ label {
   width: 100%;
   border-radius: 5px;
   padding: 10px;
+<<<<<<< HEAD
   font-weight: bold;
+=======
+>>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
 }
 
 .add-media-btn:hover {
@@ -2090,6 +2097,7 @@ button:hover {
   height: 100%;
   object-fit: cover;
 }
+<<<<<<< HEAD
 .step-card img {
   width: 100%;
   height: 180px;
@@ -2224,9 +2232,31 @@ button:hover {
 .step-text h4 {
   font-size: 16px;
   font-weight: 700;
-  margin-bottom: 8px;
+=======
+
+/* Card Body */
+.card-bodys {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Align text to the bottom */
+  padding: 15px;
 }
 
+/* Category Tag */
+.guide-categorys {
+  display: inline-block;
+  background: #28a745;
+  color: white;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+>>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+<<<<<<< HEAD
 .step-text p {
   font-size: 14px;
   color: #444;
@@ -2273,6 +2303,30 @@ button:hover {
 
 
 
+=======
+/* Title */
+.card-title {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Responsive Layout */
+@media (max-width: 992px) {
+  .guide-card {
+    flex: 1 1 calc(50% - 20px); /* 2 columns */
+    max-width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 600px) {
+  .guide-card {
+    flex: 1 1 100%; /* 1 column */
+    max-width: 100%;
+  }
+}
+
+>>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
 /* Challenges CSS */
 .challenges-container {
   max-width: 1100px;

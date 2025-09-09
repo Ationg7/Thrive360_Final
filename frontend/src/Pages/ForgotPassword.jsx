@@ -23,7 +23,7 @@ const ForgotPassword = () => {
             <label>Email Address</label>
             <input type="email" placeholder="e.g. user@domain.com" className="forgot-input" />
 
-            <button className="resend-in-btn" onClick={() => navigate("/Profile")}>
+            <button className="resend-in-btn" onClick={() => navigate("/Signin")}>
               Resend
             </button>
           </form>
