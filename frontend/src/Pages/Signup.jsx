@@ -15,51 +15,49 @@ const SignUp = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-        alert("Passwords do not match");
-        return;
+      alert("Passwords do not match");
+      return;
     }
 
     try {
-        console.log("Sending registration request...");
-        const requestData = {
-            email,
-            password,
-            password_confirmation: confirmPassword
-        };
-        console.log("Sending data:", requestData);
+      const requestData = {
+        email,
+        password,
+        password_confirmation: confirmPassword
+      };
 
-        const response = await fetch("http://127.0.0.1:8000/api/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestData)
-        });
+      const response = await fetch("http://127.0.0.1:8000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData)
+      });
 
-        console.log("Response status:", response.status);
-        const data = await response.json();
-        console.log("Response data:", data);
+      const data = await response.json();
 
-        if (response.ok) {
-            alert("Registration successful!");
-            navigate("/SignIn");
+      if (response.ok) {
+        alert("Registration successful!");
+        navigate("/SignIn");
+      } else {
+        if (data.errors) {
+          const errorMessages = Object.values(data.errors).flat().join('\n');
+          alert("Validation errors:\n" + errorMessages);
         } else {
-            if (data.errors) {
-                const errorMessages = Object.values(data.errors).flat().join('\n');
-                alert("Validation errors:\n" + errorMessages);
-            } else {
-                alert("Error: " + (data.message || "Something went wrong"));
-            }
+          alert("Error: " + (data.message || "Something went wrong"));
         }
+      }
     } catch (error) {
-        console.error("Request failed:", error);
-        alert("Network error: " + error.message);
+      console.error("Request failed:", error);
+      alert("Network error: " + error.message);
     }
-};
+  };
 
   return (
     <div className="container">
       <div className="signup-container">
         <div className="signup-card">
+          {/* Logo & Title */}
           <div className="logo-containers">
+            <h6 className="Signup-text">Sign up</h6>
             <img src={logo} alt="Logo" className="small-logo" />
           </div>
 
@@ -132,6 +130,7 @@ const SignUp = () => {
           </p>
         </div>
 
+        {/* Side image & circles */}
         <div className="text-centers">
           <div className="circle-borders"></div>
           <div className="circle-backg"></div>
