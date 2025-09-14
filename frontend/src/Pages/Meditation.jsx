@@ -1,10 +1,11 @@
 // Meditation.js
 import React, { useState } from "react";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Container, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 const Meditation = () => {
   const [activeTab, setActiveTab] = useState("Meditation");
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   const guides = {
@@ -30,9 +31,9 @@ const Meditation = () => {
           "Techniques to manage stress and calm your mind during anxious moments. These practices teach you how to regulate your breathing, release tension, and regain focus. Regular practice can lower anxiety levels, improve sleep quality, and enhance your ability to handle everyday stressors.",
         image: "https://i.pinimg.com/474x/a9/0f/ba/a90fba4eef258ca5cdec3abdb479fe91.jpg",
         steps: [
-          { step: 1, title: "Sit in a comfortable position and take a deep breath.", img: "https://i.pinimg.com/736x/bc/8d/d2/bc8dd2cb83b36bfb68f3443761f4c890.jpg" },
-          { step: 2, title: "Breathe in for 4 seconds, hold for 4 seconds, exhale for 6 seconds.", img: "https://i.pinimg.com/736x/02/52/92/0252927e43e7e889ca88a4c3f49b6aa2.jpg" },
-          { step: 3, title: "Repeat this cycle for 5 minutes while focusing on your breath.", img: "https://i.pinimg.com/736x/ae/b7/f9/aeb7f918d4701d05f3fb4d6f249fc6c2.jpg" },
+          { step: 1, title: "Sit in a comfortable position and take a deep breath.", img: "https://i.pinimg.com/474x/a9/0f/ba/a90fba4eef258ca5cdec3abdb479fe91.jpg" },
+          { step: 2, title: "Breathe in for 4 seconds, hold for 4 seconds, exhale for 6 seconds.", img: ":/https://i.pinimg.com/474x/a9/0f/ba/a90fba4eef258ca5cdec3abdb479fe91.jpg" },
+          { step: 3, title: "Repeat this cycle for 5 minutes while focusing on your breath.", img: "https://i.pinimg.com/474x/a9/0f/ba/a90fba4eef258ca5cdec3abdb479fe91.jpg" },
         ],
       },
       {
@@ -40,7 +41,7 @@ const Meditation = () => {
         category: "Mental Health",
         description:
           "A practice of walking slowly and being aware of each step you take. Mindful walking integrates gentle movement with mindfulness, helping you connect with your surroundings, release tension, and improve mental clarity. This technique is excellent for those who find sitting meditation challenging.",
-        image: "https://i.pinimg.com/736x/f3/7e/7c/f37e7cda62ec4d1679c5112ffb63a89c.jpg",
+        image: "https://i.pinimg.com/736x/28/90/4e/28904e0443cc6749d2e004c2bbac7639.jpg",
         steps: [
           { step: 1, title: "Find a safe place to walk slowly.", img: "https://i.pinimg.com/736x/14/89/7e/14897ee84d60c34d94049b2f38c1c118.jpg" },
           { step: 2, title: "Pay attention to the sensation of your feet touching the ground.", img: "https://i.pinimg.com/736x/3c/08/bb/3c08bb16ef0d9e4126ec996ebda6f421.jpg" },
@@ -73,14 +74,47 @@ const Meditation = () => {
         ],
       },
       {
-        title: "Desk Stretching",
+        title: "Evening Stretch Routine",
         category: "Physical Health",
         description:
-          "Quick stretches to relax your muscles while working at a desk. These stretches help counteract the effects of prolonged sitting, release tension in your neck, shoulders, and back, and keep your body energized throughout the workday.",
-        image: "https://i.pinimg.com/736x/b1/ab/14/b1ab1491a6a3ec8cfcd509a5891a45c4.jpg",
+          "Relax your muscles and improve flexibility before bed. These stretches help release tension accumulated throughout the day, promoting better sleep and reducing stiffness.",
+        image: "https://i.pinimg.com/736x/12/34/56/123456abcdef.jpg",
         steps: [
-          { step: 1, title: "Stretch your arms above your head.", img: "https://i.pinimg.com/736x/5d/7a/f5/5d7af5f662f9ad4e7db2559c0c49a528.jpg" },
-          { step: 2, title: "Gently twist your torso left and right.", img: "https://i.pinimg.com/736x/f5/53/7c/f5537ceee57c02d885be9d08b24c9a16.jpg" },
+          { step: 1, title: "Sit on the floor and stretch your legs forward.", img: "https://i.pinimg.com/736x/ab/cd/ef/abcdef123456.jpg" },
+          { step: 2, title: "Reach for your toes and hold for 20 seconds.", img: "https://i.pinimg.com/736x/98/76/54/9876543210.jpg" },
+        ],
+      },
+            {
+        title: "Evening Stretch Routine",
+        category: "Physical Health",
+        description:
+          "Relax your muscles and improve flexibility before bed. These stretches help release tension accumulated throughout the day, promoting better sleep and reducing stiffness.",
+        image: "https://i.pinimg.com/736x/12/34/56/123456abcdef.jpg",
+        steps: [
+          { step: 1, title: "Sit on the floor and stretch your legs forward.", img: "https://i.pinimg.com/736x/ab/cd/ef/abcdef123456.jpg" },
+          { step: 2, title: "Reach for your toes and hold for 20 seconds.", img: "https://i.pinimg.com/736x/98/76/54/9876543210.jpg" },
+        ],
+      },
+            {
+        title: "Evening Stretch Routine",
+        category: "Physical Health",
+        description:
+          "Relax your muscles and improve flexibility before bed. These stretches help release tension accumulated throughout the day, promoting better sleep and reducing stiffness.",
+        image: "https://i.pinimg.com/736x/12/34/56/123456abcdef.jpg",
+        steps: [
+          { step: 1, title: "Sit on the floor and stretch your legs forward.", img: "https://i.pinimg.com/736x/ab/cd/ef/abcdef123456.jpg" },
+          { step: 2, title: "Reach for your toes and hold for 20 seconds.", img: "https://i.pinimg.com/736x/98/76/54/9876543210.jpg" },
+        ],
+      },
+            {
+        title: "Evening Stretch Routine",
+        category: "Physical Health",
+        description:
+          "Relax your muscles and improve flexibility before bed. These stretches help release tension accumulated throughout the day, promoting better sleep and reducing stiffness.",
+        image: "https://i.pinimg.com/736x/12/34/56/123456abcdef.jpg",
+        steps: [
+          { step: 1, title: "Sit on the floor and stretch your legs forward.", img: "https://i.pinimg.com/736x/ab/cd/ef/abcdef123456.jpg" },
+          { step: 2, title: "Reach for your toes and hold for 20 seconds.", img: "https://i.pinimg.com/736x/98/76/54/9876543210.jpg" },
         ],
       },
     ],
@@ -97,16 +131,40 @@ const Meditation = () => {
           { step: 3, title: "Hold a plank for 20 seconds.", img: "https://i.pinimg.com/736x/3a/ef/66/3aef66543e0b1bc40745dc10547d96e1.jpg" },
         ],
       },
-      {
-        title: "Quick Cardio Blast",
+            {
+        title: "Full Body Beginner Workout",
         category: "Fitness",
         description:
-          "Get your heart pumping with a short cardio session. This high-energy routine boosts cardiovascular fitness, increases endurance, and elevates your mood. Perfect for a quick workout when time is limited but results are needed.",
-        image: "https://i.pinimg.com/736x/23/13/15/2313158c573589efc21f845d28e91ae5.jpg",
+          "A basic workout for beginners to improve strength and flexibility. This routine targets major muscle groups, enhances core stability, and builds stamina gradually. Ideal for those starting their fitness journey, it sets a solid foundation for more advanced workouts.",
+        image: "https://i.pinimg.com/736x/45/aa/fd/45aafdd5b6bb21f77a50a89d33fcb1b5.jpg",
         steps: [
-          { step: 1, title: "Do 20 jumping jacks.", img: "https://i.pinimg.com/736x/1f/83/c3/1f83c3b4acfa68d5a4a8c2c303d0e4ef.jpg" },
-          { step: 2, title: "Run in place for 1 minute.", img: "https://i.pinimg.com/736x/42/eb/f3/42ebf325f69e0b9a97e45757c53f44d8.jpg" },
-          { step: 3, title: "Finish with 15 burpees.", img: "https://i.pinimg.com/736x/da/26/b0/da26b063abf79b726dd6caa9f702c2bc.jpg" },
+          { step: 1, title: "Start with 10 squats.", img: "https://i.pinimg.com/736x/18/15/7a/18157a6c691b7dff5d8ee0b1f29a9b12.jpg" },
+          { step: 2, title: "Do 10 pushups on your knees or full pushups.", img: "https://i.pinimg.com/736x/55/82/46/558246e7d9f83fdc56a0a2ea8e3b97a6.jpg" },
+          { step: 3, title: "Hold a plank for 20 seconds.", img: "https://i.pinimg.com/736x/3a/ef/66/3aef66543e0b1bc40745dc10547d96e1.jpg" },
+        ],
+      },
+            {
+        title: "Full Body Beginner Workout",
+        category: "Fitness",
+        description:
+          "A basic workout for beginners to improve strength and flexibility. This routine targets major muscle groups, enhances core stability, and builds stamina gradually. Ideal for those starting their fitness journey, it sets a solid foundation for more advanced workouts.",
+        image: "https://i.pinimg.com/736x/45/aa/fd/45aafdd5b6bb21f77a50a89d33fcb1b5.jpg",
+        steps: [
+          { step: 1, title: "Start with 10 squats.", img: "https://i.pinimg.com/736x/18/15/7a/18157a6c691b7dff5d8ee0b1f29a9b12.jpg" },
+          { step: 2, title: "Do 10 pushups on your knees or full pushups.", img: "https://i.pinimg.com/736x/55/82/46/558246e7d9f83fdc56a0a2ea8e3b97a6.jpg" },
+          { step: 3, title: "Hold a plank for 20 seconds.", img: "https://i.pinimg.com/736x/3a/ef/66/3aef66543e0b1bc40745dc10547d96e1.jpg" },
+        ],
+      },
+            {
+        title: "Full Body Beginner Workout",
+        category: "Fitness",
+        description:
+          "A basic workout for beginners to improve strength and flexibility. This routine targets major muscle groups, enhances core stability, and builds stamina gradually. Ideal for those starting their fitness journey, it sets a solid foundation for more advanced workouts.",
+        image: "https://i.pinimg.com/736x/45/aa/fd/45aafdd5b6bb21f77a50a89d33fcb1b5.jpg",
+        steps: [
+          { step: 1, title: "Start with 10 squats.", img: "https://i.pinimg.com/736x/18/15/7a/18157a6c691b7dff5d8ee0b1f29a9b12.jpg" },
+          { step: 2, title: "Do 10 pushups on your knees or full pushups.", img: "https://i.pinimg.com/736x/55/82/46/558246e7d9f83fdc56a0a2ea8e3b97a6.jpg" },
+          { step: 3, title: "Hold a plank for 20 seconds.", img: "https://i.pinimg.com/736x/3a/ef/66/3aef66543e0b1bc40745dc10547d96e1.jpg" },
         ],
       },
     ],
@@ -116,59 +174,69 @@ const Meditation = () => {
     navigate("/guide-detail", { state: { guide } });
   };
 
+  const filteredGuides = guides[activeTab].filter(
+    (guide) =>
+      guide.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guide.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guide.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="meditation-page">
-      <Container className="meditation-container">
+      <Container className="wellness-container">
+        {/* Header */}
         <div className="header">
           <h2 className="text-center">Guided Meditation & Exercise</h2>
-          <p className="text-center descriptiion">
+          <p className="text-center description">
             Follow step-by-step guides designed to help you practice mindfulness,
-            reduce stress, enhance mental clarity, and stay physically active. Each guide
-            provides clear instructions, images, and structured steps to make your journey
-            easier and more effective.
+            reduce stress, enhance mental clarity, and stay physically active.
           </p>
         </div>
 
-        {/* Tabs */}
-        <div className="tabs-container">
-          {Object.keys(guides).map((tab) => (
-            <button
-              key={tab}
-              className={`tab ${activeTab === tab ? "active" : ""}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
+        {/* Categories + Search */}
+        <div className="category-search-container">
+          <div className="categories">
+            {Object.keys(guides).map((tab) => (
+              <button
+                key={tab}
+                className={activeTab === tab ? "active" : ""}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search guides..."
+              className="search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
 
-        {/* Guide Grid */}
-        <Row className="guide-grid">
-          {guides[activeTab].map((guide, index) => (
-            <Col
-              md={3}
-              sm={6}
-              xs={12}
-              key={index}
-              className="guide-card"
-              onClick={() => handleCardClick(guide)}
-            >
-              <Card className="equal-height-card clickable-card">
-                <div className="image-placeholder">
-                  <img
-                    src={guide.image}
-                    alt={guide.title}
-                    className="card-image"
-                  />
-                </div>
-                <Card.Body className="card-body">
-                  <span className="guide-category">{guide.category}</span>
-                  <Card.Title>{guide.title}</Card.Title>
+        {/* Guides Grid */}
+        <div className="guide-grid">
+          {filteredGuides.length > 0 ? (
+            filteredGuides.map((guide, index) => (
+              <Card
+                key={index}
+                className="blog-card clickable-card"
+                onClick={() => handleCardClick(guide)}
+              >
+                <img src={guide.image} alt={guide.title} className="card-image" />
+                <Card.Body>
+                  <span className="blog-category">{guide.category}</span>
+                  <Card.Title className="blog-title">{guide.title}</Card.Title>
                 </Card.Body>
               </Card>
-            </Col>
-          ))}
-        </Row>
+            ))
+          ) : (
+            <p className="text-center">No guides found.</p>
+          )}
+        </div>
       </Container>
     </div>
   );

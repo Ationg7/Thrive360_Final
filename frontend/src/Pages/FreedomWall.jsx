@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Container, Card, Form, Modal, Button } from "react-bootstrap";
+import { Container, Card, Form, Modal, Button, Dropdown } from "react-bootstrap";
 import { Heart, Send, Image, Smile } from "lucide-react";
-import EmojiPicker from "emoji-picker-react"; // Import Emoji Picker
+import { FaEllipsisV } from "react-icons/fa";
+import EmojiPicker from "emoji-picker-react";
+import "../App.css";
 
 const FreedomWall = () => {
   const initialPosts = [
@@ -32,10 +34,36 @@ const FreedomWall = () => {
   ];
 
   const [posts, setPosts] = useState(initialPosts);
+  const [hiddenPosts, setHiddenPosts] = useState([]);
+  const [showUndo, setShowUndo] = useState(false);
+
   const [showPostModal, setShowPostModal] = useState(false);
   const [newPost, setNewPost] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportPostId, setReportPostId] = useState(null);
+  const [selectedReason, setSelectedReason] = useState("");
+
+  const reportReasons = [
+    "Spam or misleading",
+    "Harassment or bullying",
+    "Hate speech or violence",
+    "Nudity or sexual content",
+    "Self-harm or dangerous acts",
+    "Other",
+  ];
+
+  const badWords = ["badword1", "badword2", "badword3"];
+  const censorText = (text) => {
+    let censored = text;
+    badWords.forEach((word) => {
+      const regex = new RegExp(word, "gi");
+      censored = censored.replace(regex, "*".repeat(word.length));
+    });
+    return censored;
+  };
 
   const handleLike = (id) => {
     setPosts(
@@ -58,7 +86,7 @@ const FreedomWall = () => {
   };
 
   const handlePost = () => {
-    if (newPost.trim() === "" && !selectedImage) return; // Prevent empty posts
+    if (newPost.trim() === "" && !selectedImage) return;
 
     const newPostEntry = {
       id: posts.length + 1,
@@ -80,7 +108,7 @@ const FreedomWall = () => {
 
   const handleEmojiClick = (emojiObject) => {
     setNewPost((prev) => prev + emojiObject.emoji);
-    setShowEmojiPicker(false); // Close emoji picker after selecting
+    setShowEmojiPicker(false);
   };
 
   const handleImageUpload = (event) => {
@@ -94,6 +122,34 @@ const FreedomWall = () => {
     }
   };
 
+  const openReportModal = (id) => {
+    setReportPostId(id);
+    setShowReportModal(true);
+  };
+
+  const submitReport = () => {
+    console.log(`Post ${reportPostId} reported for reason: ${selectedReason}`);
+    setShowReportModal(false);
+    setSelectedReason("");
+    alert("Report submitted. Thank you for your feedback!");
+  };
+
+  const handleHide = (id) => {
+    const postToHide = posts.find((post) => post.id === id);
+    if (postToHide) {
+      setHiddenPosts([postToHide, ...hiddenPosts]);
+      setPosts(posts.filter((post) => post.id !== id));
+      setShowUndo(true);
+      setTimeout(() => setShowUndo(false), 5000);
+    }
+  };
+
+  const undoHide = () => {
+    setPosts([...hiddenPosts, ...posts]);
+    setHiddenPosts([]);
+    setShowUndo(false);
+  };
+
   return (
     <Container className="freedom-wall-container">
       <div className="header">
@@ -102,7 +158,7 @@ const FreedomWall = () => {
           Express yourself freely, share your thoughts, struggles, victories, or uplifting messages with our community.
         </p>
       </div>
-    
+
       {/* New Post Input */}
       <Card className="post-input-card" onClick={() => setShowPostModal(true)}>
         <div className="post-input">
@@ -111,12 +167,12 @@ const FreedomWall = () => {
         </div>
       </Card>
 
-      {/* Floating Post Window */}
+      {/* Floating Post Modal with updated background */}
       <Modal show={showPostModal} onHide={() => setShowPostModal(false)} centered>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton style={{ backgroundColor: "#e6f4ea" }}>
           <Modal.Title>Create Post</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ backgroundColor: "#f7fff9" }}>
           <div className="post-modal-content">
             <div className="post-header">
               <div className="avatar">A</div>
@@ -130,15 +186,11 @@ const FreedomWall = () => {
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
             />
-
-            {/* Image Preview */}
             {selectedImage && (
               <div className="image-preview">
                 <img src={selectedImage} alt="Selected" className="img-fluid" />
               </div>
             )}
-
-            {/* Add to your post section */}
             <div className="add-post-container">
               <Button variant="light" className="add-post-btn">
                 Add to your post
@@ -153,24 +205,94 @@ const FreedomWall = () => {
                     style={{ display: "none" }}
                     onChange={handleImageUpload}
                   />
-                  <Smile size={20} className="post-icon" onClick={() => setShowEmojiPicker(!showEmojiPicker)} />
+                  <Smile
+                    size={20}
+                    className="post-icon"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  />
                 </div>
               </Button>
             </div>
-
-            {/* Emoji Picker */}
             {showEmojiPicker && <EmojiPicker onEmojiClick={handleEmojiClick} />}
           </div>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer style={{ backgroundColor: "#e6f4ea" }}>
           <Button variant="success" onClick={handlePost}>Post</Button>
         </Modal.Footer>
       </Modal>
 
+      {/* Floating Report Modal */}
+      <Modal show={showReportModal} onHide={() => setShowReportModal(false)} centered className="report-modal">
+        <Modal.Header closeButton style={{ backgroundColor: "#e6f4ea" }}>
+          <Modal.Title>Report Post</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ backgroundColor: "#f7fff9" }}>
+          <p>Please select a reason for reporting this post:</p>
+          {reportReasons.map((reason) => (
+            <Form.Check
+              key={reason}
+              type="radio"
+              id={`report-${reason}`}
+              label={reason}
+              name="reportReason"
+              value={reason}
+              checked={selectedReason === reason}
+              onChange={(e) => setSelectedReason(e.target.value)}
+              className="mb-2"
+            />
+          ))}
+        </Modal.Body>
+        <Modal.Footer style={{ backgroundColor: "#e6f4ea" }}>
+          <Button variant="secondary" onClick={() => setShowReportModal(false)}>Cancel</Button>
+          <Button variant="success" onClick={submitReport} disabled={!selectedReason}>Submit</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Undo Notification */}
+      {showUndo && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            backgroundColor: "#e6f4ea",
+            padding: "10px 20px",
+            borderRadius: "8px",
+            boxShadow: "0px 2px 8px rgba(0,0,0,0.2)",
+            zIndex: 9999,
+          }}
+        >
+          Post hidden.{" "}
+          <span
+            style={{ color: "green", cursor: "pointer", fontWeight: "bold" }}
+            onClick={undoHide}
+          >
+            Undo
+          </span>
+        </div>
+      )}
+
       {/* Displaying Posts */}
       <div className="post-list">
         {posts.map((post) => (
-          <Card className="post-card" key={post.id}>
+          <Card className="post-card position-relative" key={post.id}>
+            {/* Three-dot menu */}
+            <Dropdown className="position-absolute" style={{ top: "10px", right: "10px" }}>
+              <Dropdown.Toggle
+                variant="light"
+                size="sm"
+                className="p-0 border-0 d-flex align-items-center justify-content-center"
+                bsPrefix="btn"
+                id={`dropdown-${post.id}`}
+              >
+                <FaEllipsisV />
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item onClick={() => openReportModal(post.id)}>Report</Dropdown.Item>
+                <Dropdown.Item onClick={() => handleHide(post.id)}>Hide</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+
             <Card.Body>
               <div className="post-header">
                 <div className="avatar">A</div>
@@ -179,11 +301,8 @@ const FreedomWall = () => {
                   <Card.Subtitle className="post-date">{post.date}</Card.Subtitle>
                 </div>
               </div>
-              <Card.Text className="post-content">{post.content}</Card.Text>
-
-              {/* Display Image if available */}
+              <Card.Text className="post-content">{censorText(post.content)}</Card.Text>
               {post.image && <img src={post.image} alt="Post" className="img-fluid post-image" />}
-
               <div className="post-actions">
                 <div className="action-group">
                   <div className="like-button" onClick={() => handleLike(post.id)}>

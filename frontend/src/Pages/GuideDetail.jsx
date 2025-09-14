@@ -16,10 +16,11 @@ const GuideDetails = () => {
       {/* Top card */}
       <div className="top-card">
         <div className="top-text">
-          <p className="category">{guide.category}</p>
-          <h2>{guide.title}</h2>
-          <p>{guide.description}</p>
-        </div>
+  <span className="guide-category-tag">{guide.category}</span>
+  <h2>{guide.title}</h2>
+  <p>{guide.description}</p>
+</div>
+
         <div className="top-image">
           <img src={guide.image} alt={guide.title} />
         </div>

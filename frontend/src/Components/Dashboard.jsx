@@ -1,242 +1,247 @@
 import React, { useState } from "react";
+import { Container, Row, Col, Card, Table, Button, ListGroup } from "react-bootstrap";
+import { Line } from "react-chartjs-2";
 import {
-  Container,
-  Row,
-  Col,
-  Card,
-  ProgressBar,
-} from "react-bootstrap";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
   Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
-import {
-  PeopleFill,
-  ClockFill,
-  GraphUpArrow,
-  List,
-  BoxArrowRight,
-  GearFill,
-} from "react-bootstrap-icons";
-import { Link } from "react-router-dom";
+  Legend,
+} from "chart.js";
 
-const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-  const usageData = [
-    { name: "Freedom Wall", prev: 100, curr: 340 },
-    { name: "Wellness Blog", prev: 50, curr: 323 },
-    { name: "Meditation", prev: 55, curr: 400 },
-    { name: "Challenges", prev: 50, curr: 250 },
+const AdminDashboard = () => {
+  const [activeTab, setActiveTab] = useState("Dashboard");
+
+  const sidebarItems = [
+    "Dashboard",
+    "Content Management",
+    "User Management",
+    "Reports & Feedback",
+    "Notifications",
+    "Settings",
   ];
 
-  const featureData = [
-    { name: "Active Users", value: 312, icon: <PeopleFill /> },
-    { name: "Time Spent", value: "748 hrs", icon: <ClockFill /> },
-    { name: "Top Streak", value: "12 days", icon: <GraphUpArrow /> },
-  ];
+  // Chart Data for Dashboard
+  const chartData = {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    datasets: [
+      {
+        label: "Active Users",
+        data: [200, 400, 300, 500, 450, 600, 550],
+        borderColor: "#2e7d32",
+        backgroundColor: "rgba(46,125,50,0.2)",
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+      title: { display: true, text: "User Activity Over the Week" },
+    },
+  };
 
   return (
-    <div className="d-flex" style={{ minHeight: "100vh", backgroundColor: "#f5f7fa" }}>
-      {/* Sidebar */}
-      <div
-        style={{
-          
-          width: sidebarOpen ? "220px" : "70px",
-          backgroundColor: "#2e7d32",
-          transition: "width 0.3s",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: sidebarOpen ? "flex-start" : "center",
-          padding: "1rem",
-          color: "white",
-        }}
-      >
-        <div className="mb-4 d-flex align-items-center w-100">
-          <List
-            size={24}
-            className="me-2 cursor-pointer"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          />
-        {sidebarOpen && <h5 className="mb-0 ms-2">Thrive360</h5>}
-        </div>
-        <Link to="/FreedomWall" style={{ textDecoration: 'none', color: 'inherit' }}>
-  <div className="mb-3">{sidebarOpen ? "📝 Freedom Wall" : "📝"}</div>
-</Link>
+    <Container fluid className="admin-dashboard p-0" style={{ minHeight: "100vh", background: "#f7fff9" }}>
+      <Row className="m-0">
+        {/* Sidebar */}
+        <Col xs={2} className="p-3" style={{ background: "#2e7d32", minHeight: "100vh", color: "#fff" }}>
+          <h4 className="mb-4">THRIVE360</h4>
+          <ListGroup variant="flush">
+            {sidebarItems.map((item) => (
+              <ListGroup.Item
+                key={item}
+                onClick={() => setActiveTab(item)}
+                style={{
+                  background: item === activeTab ? "#1b5e20" : "#2e7d32",
+                  color: "#fff",
+                  cursor: "pointer",
+                  border: "none",
+                  marginBottom: "8px",
+                }}
+              >
+                {item}
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Col>
 
-<Link to="/Meditation" style={{ textDecoration: 'none', color: 'inherit' }}>
-  <div className="mb-3">{sidebarOpen ? "🧘 Meditation" : "🧘"}</div>
-</Link>
+        {/* Main Content */}
+        <Col xs={10} className="p-4">
+          <h2 className="mb-3" style={{ color: "#2e7d32" }}>{activeTab}</h2>
+          <p className="mb-4">Student health, well-being, and engagement</p>
 
-<Link to="/Challenges" style={{ textDecoration: 'none', color: 'inherit' }}>
-  <div className="mb-3">{sidebarOpen ? "🎯 Challenges" : "🎯"}</div>
-</Link>
+          {/* Dashboard Tab */}
+          {activeTab === "Dashboard" && (
+            <>
+              <Row className="mb-4">
+                {[
+                  { label: "Total Users", value: "1,250" },
+                  { label: "Active Users", value: "942" },
+                  { label: "Blogs", value: "35" },
+                  { label: "Meditations", value: "20" },
+                ].map((item, idx) => (
+                  <Col key={idx}>
+                    <Card className="p-3 text-center" style={{ border: "2px solid #2e7d32" }}>
+                      <h4>{item.value}</h4>
+                      <p className="mb-0">{item.label}</p>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
 
-<Link to="/WellnessBlog" style={{ textDecoration: 'none', color: 'inherit' }}>
-  <div className="mb-3">{sidebarOpen ? "📖 Wellness Blog" : "📖"}</div>
-</Link>
+              <Row className="mb-4">
+                <Col md={8}>
+                  <Card className="p-3 mb-3">
+                    <h5>User Activity</h5>
+                    <Line data={chartData} options={chartOptions} />
+                  </Card>
+                </Col>
+                <Col md={4}>
+                  <Card className="p-3 mb-3">
+                    <h5>Top Trends</h5>
+                    <p><strong>Top Meditation</strong><br />Mindfulness Meditation 78</p>
+                    <p><strong>Top Blog</strong><br />Managing Stress: Tips and Techniques 65</p>
+                    <p><strong>Top Challenge</strong><br />30 Day Self-Care Challenge 50</p>
+                  </Card>
+                </Col>
+              </Row>
+            </>
+          )}
 
-<div className="mt-auto mb-3">{sidebarOpen ? "👤 Profile" : "👤"}</div>
-
-<Link to="/SignIn" style={{ textDecoration: 'none', color: 'inherit' }}>
-  <div className="mb-3">{sidebarOpen ? "🚪 Log Out" : "🚪"}</div>
-</Link>
-
-      </div>
-
-      {/* Main Content */}
-      <Container fluid className="p-4">
-        <Row>
-          <Col>
-            <h4 className="fw-bold text-success">Thrive360</h4>
-            <h1 className="text-muted">Dashboard</h1>
-          </Col>
-        </Row>
-
-        <Row className="mb-4">
-          <Col md={8}>
-            <Card className="p-3">
-              <h6>Users Engagement</h6>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={usageData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="prev" fill="#A5D6A7" name="Previous" barSize={50} />
-                  <Bar dataKey="curr" fill="#388E3C" name="Current" barSize={50} />
-                </BarChart>
-              </ResponsiveContainer>
+          {/* Content Management Tab */}
+          {activeTab === "Content Management" && (
+            <Card className="p-3 mb-3">
+              <h5>Content Management</h5>
+              <Button style={{ background: "#2e7d32", border: "none", marginBottom: "10px" }}>Add New Blog</Button>
+              <Button style={{ background: "#2e7d32", border: "none", marginLeft: "5px", marginBottom: "10px" }}>Add New Meditation</Button>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>5 Tips for Better</td>
+                    <td>Published</td>
+                    <td>Blog</td>
+                  </tr>
+                  <tr>
+                    <td>Morning Meditation</td>
+                    <td>Draft</td>
+                    <td>Meditation</td>
+                  </tr>
+                </tbody>
+              </Table>
             </Card>
-          </Col>
+          )}
 
-          <Col md={4}>
-            <Card className="p-3 text-center">
-              <h6>Most Engaged Feature</h6>
-              <div className="d-flex justify-content-center align-items-center" style={{ height: 50 }}>
-                <h1 className="text-success fw-bold">66%</h1>
-              </div>
-              <p className="text-muted small">Freedom Wall</p>
+          {/* User Management Tab */}
+          {activeTab === "User Management" && (
+            <Card className="p-3 mb-3">
+              <h5>User Management</h5>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Last Seen</th>
+                    <th>Engagement</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>John Doe</td>
+                    <td>1 day ago</td>
+                    <td>High</td>
+                  </tr>
+                  <tr>
+                    <td>Jane Smith</td>
+                    <td>3 days ago</td>
+                    <td>Medium</td>
+                  </tr>
+                </tbody>
+              </Table>
             </Card>
-            <Card className="p-3 mt-3 text-center">
-              <h6>Least Engagement</h6>
-              <div className="d-flex justify-content-center align-items-center" style={{ height: 50 }}>
-                <h1 className="text-success fw-bold">10%</h1>
-              </div>
-              <p className="text-muted small">Wellness Blog</p>
-            </Card>
-          </Col>
-        </Row>
+          )}
 
-        <Row>
-          {featureData.map((item, index) => (
-            <Col md={4} key={index}>
-              <Card className="p-3 mb-4">
-                <div className="d-flex align-items-center">
-                  <div className="me-3 fs-4 text-success">{item.icon}</div>
-                  <div>
-                    <h6 className="mb-0">{item.name}</h6>
-                    <small className="text-muted">{item.value}</small>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-
-        <h5 className="mb-3 text-muted">Statistics</h5>
-        <Row>
-          <Col md={4}>
-             <Card style={{ width: "450px", padding: "1rem" }}>
-              <Card.Body>
-     <Card.Title>To Do List</Card.Title>  
-             <ProgressBar
-              now={55}
-              label="55%"
-              variant="success"
-              className="thick-progress"
-              />
-              <div className="d-flex justify-content-between mt-2 " >
-              <span className="text-danger small ">302 participants</span>
-              </div>
-              </Card.Body>
+          {/* Reports & Feedback Tab */}
+          {activeTab === "Reports & Feedback" && (
+            <Card className="p-3 mb-3">
+              <h5>Reports & Feedback</h5>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Report</th>
+                    <th>User</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Inappropriate Content</td>
+                    <td>John Doe</td>
+                    <td>Reviewed</td>
+                  </tr>
+                  <tr>
+                    <td>Feature Request</td>
+                    <td>Jane Smith</td>
+                    <td>Pending</td>
+                  </tr>
+                </tbody>
+              </Table>
             </Card>
-          </Col>
+          )}
 
-          <Col md={4}>
-            <Card style={{ width: "450px", padding: "1rem" }}>
-              <Card.Body>
-     <Card.Title>Events</Card.Title>  
-             <ProgressBar
-              now={60}
-              label="60%"
-              variant="success"
-              className="thick-progress"
-              />
-              <div className="d-flex justify-content-between mt-2 " >
-              <span className="text-danger small ">302 participants</span>
-              </div>
-              </Card.Body>
+          {/* Notifications Tab */}
+          {activeTab === "Notifications" && (
+            <Card className="p-3 mb-3">
+              <h5>Notifications</h5>
+              <Button style={{ background: "#2e7d32", border: "none", marginBottom: "10px" }}>Send New Notification</Button>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>New Blog Published</td>
+                    <td>2025-09-14</td>
+                    <td>Sent</td>
+                  </tr>
+                  <tr>
+                    <td>System Maintenance</td>
+                    <td>2025-09-15</td>
+                    <td>Pending</td>
+                  </tr>
+                </tbody>
+              </Table>
             </Card>
-          </Col>
+          )}
 
-          <Col md={4}>
-            <Card style={{ width: "450px", padding: "1rem" }}>
-              <Card.Body>
-                <Card.Title>User Engagement</Card.Title>  
-             <ProgressBar
-              now={75}
-              label="75%"
-              variant="success"
-              className="thick-progress"
-              />
-              <div className="d-flex justify-content-between mt-2 " >
-              <span className="text-danger small ">302 participants</span>
-              </div>
-              </Card.Body>
+          {/* Settings Tab */}
+          {activeTab === "Settings" && (
+            <Card className="p-3 mb-3">
+              <h5>Settings</h5>
+              <p>Settings page placeholder – configure system settings here.</p>
             </Card>
-          </Col>
-        </Row>
-
-        <Row>
-          <Col md={6}>
-            <Card className="p-3 mt-4">
-              <h6>Bounce Rate</h6>
-              <div className="d-flex justify-content-between align-items-center">
-                <h3 className="text-danger fw-bold">10.3%</h3>
-                <small className="text-danger">+1.04%</small>
-              </div>
-              <ResponsiveContainer width="100%" height={100}>
-                <LineChart data={usageData}>
-                  <Line type="monotone" dataKey="curr" stroke="#e53935" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-          </Col>
-
-          <Col md={6}>
-            <Card className="p-3 mt-4">
-              <h6>Session Duration</h6>
-              <div className="d-flex justify-content-between align-items-center">
-                <h3 className="fw-bold text-success">5:31</h3>
-                <small className="text-success">+1:29</small>
-              </div>
-              <ResponsiveContainer width="100%" height={100}>
-                <LineChart data={usageData}>
-                  <Line type="monotone" dataKey="prev" stroke="#43A047" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </div>
+          )}
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
-export default Dashboard;
+export default AdminDashboard;
