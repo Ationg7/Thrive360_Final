@@ -3,6 +3,7 @@ import logo from "../assets/Images/logo.png";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -10,6 +11,7 @@ const SignIn = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,9 +32,8 @@ const SignIn = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Store token and user info in localStorage
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
+        // Use AuthContext to store token and user info
+        login(data.token, data.user);
 
         alert("Login successful!");
         navigate("/Home");

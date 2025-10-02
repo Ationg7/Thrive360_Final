@@ -19,5 +19,12 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed Freedom Wall, Challenges, and Admin
+        $this->call([
+            AdminSeeder::class,
+            FreedomWallSeeder::class,
+            ChallengeSeeder::class,
+        ]);
     }
 }

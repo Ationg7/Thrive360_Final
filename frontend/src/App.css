@@ -67,11 +67,7 @@
   left: 0;
   width: 100%;
   height: 3px;
-<<<<<<< HEAD
-  
-=======
-  background-color: black;
->>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
+
   border-radius: 2px;
   transition: all 0.3s ease-in-out;
 }
@@ -697,7 +693,6 @@
 .image-container img {
   width: 100%; /* Ensures full container coverage */
   height: auto;
-  object-fit: cover;
 }
 
 
@@ -1253,10 +1248,9 @@ label {
   width: 100%;
   border-radius: 5px;
   padding: 10px;
-<<<<<<< HEAD
+
   font-weight: bold;
-=======
->>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
+
 }
 
 .add-media-btn:hover {
@@ -1654,6 +1648,31 @@ button:hover {
 
 /* Freedom cSS */
 /* FreedomWall.css */
+/* Green border for report modal radio buttons */
+/* Report Modal Radio Buttons */
+.report-modal .form-check-input {
+  border: 2px solid #28a745; /* green border */
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-left: 0;
+  cursor: pointer;
+}
+
+.report-modal .form-check-input:checked {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.report-modal .form-check-label {
+  margin-left: 15px; /* move text further away */
+  cursor: pointer; /* make text clickable */
+  user-select: none;
+  font-weight: 500;
+  display: inline-block;
+}
+
+
   .freedom-wall-container {
     margin-top: 50px;
     display: flex;
@@ -1759,6 +1778,7 @@ button:hover {
 .post-author {
   font-weight: bold;
   margin-bottom: 0;
+  
 }
 
 .post-date {
@@ -1927,20 +1947,29 @@ button:hover {
 
 .blog-grid {
   display: flex;
+  flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
   gap: 20px;
   justify-content: center;
-  align-items: flex-end; /* Ensures all cards align at the bottom */
+  align-items: flex-end; /* Align cards at bottom */
 }
 
 .blog-card {
   width: 300px;
-  background: white;
+  background: #fff; /* White background */
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid #ddd;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+/* Hover effect */
+.blog-card:hover {
+  transform: translateY(-5px); /* Lift card slightly */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow */
 }
 
 .blog-card img {
@@ -1998,8 +2027,8 @@ button:hover {
   }
 }
 
-
 /* Meditation CSS */
+
 /* Container */
 .meditation-container {
   max-width: 1100px;
@@ -2008,105 +2037,140 @@ button:hover {
   text-align: center;
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Ensures full height */
+  min-height: 100vh;
   background: white;
-  
 }
 
-/* Tabs - Horizontally Centered */
-.tabs-container {
+/* Category + Search Container */
+.category-search-container {
   display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 30px;
+  justify-content: center; /* Keep categories centered */
+  align-items: center;
+  gap: 20px; /* Space between categories and search */
+  flex-wrap: wrap;
+  width: 100%;
 }
 
-.tab {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
+.categories {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.categories button {
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 10px;
   background-color: white;
+  color: #333;
   font-weight: 500;
   cursor: pointer;
   transition: 0.3s;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.tab.active {
-  background-color: #28a745;
+.categories button.active,
+.categories button:hover {
+  background-color: #198754;
   color: white;
 }
 
-.tab:hover {
-  background-color: #28a745;
-  color: white;
+/* Search Input */
+.search-container .search-input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #198754; /* Green border only */
+  width: 200px;
+  height: 40px; /* Same height as category buttons */
+  transition: all 0.2s ease-in-out;
+  margin-bottom: 30px;
 }
 
-/* STEP / GUIDE CARDS (below) */
-.guide-card {
-  border-radius: 12px;
-  border: 1px solid rgba(46,125,50,0.08);
-  transition: transform 220ms ease, box-shadow 220ms ease;
-  background: #ffffff;
-  font-weight: bold;
+.search-container .search-input:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(25, 135, 84, 0.7);
 }
 
-.guide-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 14px 30px rgba(15,23,16,0.08);
-}
-/* Guide Grid */
+  
 .guide-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  align-items: stretch; /* Ensures all cards have the same height */
 }
 
-/* Cards */
+
+/* Meditation / Guide Cards */
+.blog-card,
 .guide-card {
-  flex: 1 1 calc(33.333% - 20px); /* 3 columns */
-  max-width: calc(33.333% - 20px);
-  display: flex;
-  justify-content: center;
-}
-
-.equal-height-card {
   width: 100%;
+  max-width: 300px; /* Same as Wellness Blog cards */
+  background: white;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid #ddd;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Ensures equal spacing */
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex: 1 1 calc(25% - 20px); /* 4 columns */
 }
 
-/* Image Styling */
-.image-placeholder {
-  width: 100%;
-  height: 180px;
-  background: #ccc;
-  border-radius: 8px 8px 0 0;
-  overflow: hidden;
+.blog-card:hover,
+.guide-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-.card-image {
+/* Card Image */
+.blog-card .card-image,
+.guide-card .card-image {
   width: 100%;
-  height: 100%;
+  height: 180px; /* Same height as Wellness Blog */
   object-fit: cover;
 }
-<<<<<<< HEAD
-.step-card img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;       /* keeps image ratio */
-  border-radius: 8px;
-  border: 2px solid #2ecc71; /* green border for consistency */
-  background: #f8f8f8;     /* light fallback background */
-  display: block;          /* ensures proper rendering */
+
+/* Category Tag */
+.blog-card .blog-category,
+.guide-card .blog-category {
+  display: inline-block;
+  background: #28a745;
+  color: white;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 8px;
 }
+
+/* Card Title */
+.blog-card .blog-title,
+.guide-card .blog-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .blog-card,
+  .guide-card {
+    flex: 1 1 calc(50% - 20px); /* 2 columns */
+    max-width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 600px) {
+  .blog-card,
+  .guide-card {
+    flex: 1 1 100%; /* 1 column */
+    max-width: 100%;
+  }
+}
+
+
+
+
 
 
 /* GuideDetails CSS */
@@ -2135,6 +2199,32 @@ button:hover {
   background-color: darkgreen; /* darker on hover */
 */
 
+/* Image Styling */
+.image-placeholder {
+  width: 100%;
+  height: 180px;
+  background: #ccc;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.step-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;       /* keeps image ratio */
+  border-radius: 8px;
+  border: 2px solid #2ecc71; /* green border for consistency */
+  background: #f8f8f8;     /* light fallback background */
+  display: block;          /* ensures proper rendering */
+}
+
 .step-card img {
   width: 100%;
   height: 180px;
@@ -2142,7 +2232,6 @@ button:hover {
   border-radius: 8px;
   margin-bottom: 10px;
 }
-
 
 .guide-wrapper {
   background: #e6f0e9; /* soft green like the sample */
@@ -2154,13 +2243,14 @@ button:hover {
 .top-card {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* align top-text and image at the top */
   background: #fff;
   border-radius: 12px;
   padding: 30px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   margin-bottom: 40px;
-  margin-top: 50px;
+  gap: 20px; /* space between text and image */
+  margin-top: 70px;
 }
 
 .top-text {
@@ -2168,27 +2258,57 @@ button:hover {
   padding-right: 20px;
 }
 
+/* Category styling */
 .category {
   color: #2f7a44;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 5px; /* smaller space to title */
 }
 
+/* Title adjustment */
 .top-text h2 {
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 15px;
   color: green;
+  margin: 0; /* remove default margin */
+  position: relative;
+  top: 1px; /* move title slightly upward */
+  margin-bottom: 10px; /* space below the title */
+}
+.guide-category-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #e8f5e9;       /* light green */
+  border-left: 4px solid #4caf50; /* green accent */
+  font-weight: bold;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: black;
+  white-space: nowrap;
+  margin-bottom: 10px;
 }
 
+/* Description spacing */
 .top-text p {
   color: black;
   font-size: 15px;
   line-height: 1.6;
+  margin-top: 0; /* ensure no extra space */
+}
+
+/* Top image */
+.top-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .top-image img {
-  max-width: 200px;
+  max-width: 100%;
+  max-height: 300px; /* shorter image height */
+  border-radius: 12px;
+  object-fit: cover; /* ensures it fills the space nicely */
 }
 
 /* Section title */
@@ -2232,9 +2352,8 @@ button:hover {
 .step-text h4 {
   font-size: 16px;
   font-weight: 700;
-=======
+}
 
-/* Card Body */
 .card-bodys {
   flex: 1;
   display: flex;
@@ -2251,17 +2370,16 @@ button:hover {
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 20px;
->>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
   margin-bottom: 8px;
   text-align: center;
 }
 
-<<<<<<< HEAD
 .step-text p {
   font-size: 14px;
   color: #444;
   line-height: 1.4;
 }
+
 .back-btn-wrapper {
   margin-top: 20px;
   text-align: center;
@@ -2282,36 +2400,12 @@ button:hover {
   background-color: #357ab8;
 }
 
-.top-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px; /* space between text and image */
-}
-
-.top-image {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.top-image img {
-  max-width: 100%;
-  border-radius: 12px;
-}
-
-
-
-
-=======
-/* Title */
 .card-title {
   font-size: 16px;
   font-weight: bold;
   text-align: center;
 }
 
-/* Responsive Layout */
 @media (max-width: 992px) {
   .guide-card {
     flex: 1 1 calc(50% - 20px); /* 2 columns */
@@ -2326,8 +2420,18 @@ button:hover {
   }
 }
 
->>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
 /* Challenges CSS */
+/* Challenges card hover */
+.challenge {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.challenge:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
 .challenges-container {
   max-width: 1100px;
   margin: auto;
@@ -2808,4 +2912,208 @@ button:hover {
   font-weight: bold;
   font-family: 'Poppins', sans-serif;
   justify-content: center;
+}
+
+/* blogdetails css scoped to avoid affecting challenges */
+.blog-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 40px;
+  background: #e6f0e9;
+  gap: 50px;
+}
+
+.blog-left {
+  flex: 2;
+}
+
+.blog-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.blog-category {
+  text-transform: uppercase;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.blog-image {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.blog-image img {
+  max-width: 900px;
+  max-height: 300px;
+  width: 100%;
+  border-radius: 5px;
+  object-fit: cover;
+  margin-bottom: 20px;
+}
+
+/* Default paragraph styling in blog content */
+.blog-content p {
+  font-size: 16px;
+  color: #333;
+  line-height: 1.8;
+  margin-bottom: 15px;
+  text-align: justify;
+}
+
+/* Ensure justification only in BlogDetail */
+.blog-main-card .blog-content p,
+.blog-paragraph {
+  text-align: justify !important;
+  line-height: 1.8;
+  margin-bottom: 18px;
+  font-size: 16px;
+  color: #333;
+  word-spacing: 1px;
+}
+
+.blog-sidebar {
+  flex: 1;
+}
+
+.sidebar-section {
+  margin-bottom: 30px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.author-card {
+  text-align: left;
+}
+
+.author-card .author-img {
+  width: 100%;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.author-card h4 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.author-card p {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.6;
+}
+
+.learn-more {
+  margin-top: 15px;
+  padding:  10px 20px;
+  background: rgb(58, 189, 58);
+  color: black;
+  font-weight: bold;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.categories h4 {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.categories li {
+  font-size: 14px;
+  color: #222;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+/* Scoped blog-specific card to avoid challenges conflicts */
+.blog-container .card {
+  background: #fafafa;
+  border: 1px solid #eee;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Scoped blog-specific category card */
+.blog-container .category-card {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  font-weight: bold;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #2e7d32;
+  white-space: nowrap;
+  width: 200px;
+  height: 40px;
+}
+
+.top-foods-title {
+  font-size: 19px;
+  font-weight: 100;
+  text-align: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #000;
+  padding-bottom: 5px;
+  align-items: flex-start;
+}
+
+.food-divider {
+  border: none;
+  border-top: 1px solid #000;
+  margin: 5px 0;
+  gap: 2px;
+}
+
+/* BlurredContent.css */
+.blurred-content {
+  position: relative;
+  margin-bottom: 16px;
+}
+.blurred-main {
+  filter: blur(6px);
+  pointer-events: none;
+}
+.blurred-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  background: rgba(0,0,0,0.3);
+  font-size: 1.2em;
+  font-weight: 500;
+  pointer-events: none;
+  border-radius: 8px;
+}
+
+.floating-popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.2);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.floating-popup {
+  background: #fff;
+  padding: 24px 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  font-size: 1.1em;
+  color: #333;
+  text-align: center;
 }

@@ -3,14 +3,16 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import {
   createBrowserRouter,
   RouterProvider,
-  useLocation,
   Outlet,
+  useLocation,
 } from "react-router-dom";
 import "./App.css";
 
 import Navbar from "./Components/Navbar";
 import Navbars from "./Components/Navbars";
+import AdminNavbar from "./Components/AdminNavbar";
 import Footer from "./Components/Footer";
+
 import Home from "./Pages/Home";
 import Profile from "./Pages/Profile";
 import SignIn from "./Pages/Signin";
@@ -21,59 +23,53 @@ import Meditation from "./Pages/Meditation";
 import Challenges from "./Pages/Challenges";
 import Landing from "./Pages/Landing";
 import WellnessBlog from "./Pages/WellnessBlog";
-<<<<<<< HEAD
-import GuideDetail from "./Pages/GuideDetail"; // ✅ add this import
-=======
+import GuideDetail from "./Pages/GuideDetail";
+import BlogDetail from "./Pages/BlogDetail";
 import Dashboard from "./Components/Dashboard";
-
-import { AuthProvider, useAuth } from "./AuthContext"; // ✅
->>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
+import AdminLogin from "./Pages/AdminLogin";
+import AdminDashboard from "./Pages/AdminDashboard";
+import AdminUsers from "./Pages/AdminUsers";
+import AdminPosts from "./Pages/AdminPosts";
+import AdminChallenges from "./Pages/AdminChallenges";
+import AdminAnalytics from "./Pages/AdminAnalytics";
+import AdminReports from "./Pages/AdminReports";
+import AdminMeditation from "./Pages/AdminMeditation";
+import AdminBlogs from "./Pages/AdminBlogs";
+import AdminSettings from "./Pages/AdminSettings";
+import { useAuth } from "./AuthContext";
 
 function Layout() {
   const location = useLocation();
-  const { isAuthenticated } = useAuth(); // ✅
+  const { isLoggedIn } = useAuth();
 
-  const publicRoutes = ["/", "/SignIn", "/SignUp", "/ForgotPassword"];
-  const noNavbarRoutes = ["/Dashboard"];
-  const noFooterRoutes = ["/Dashboard"]; // ✅ exclude Footer here
+  // Debug logging
+  console.log('Layout - Current path:', location.pathname, 'isLoggedIn:', isLoggedIn);
 
-  const pathname = location.pathname;
+  // Define public and excluded routes
+  const publicRoutes = ["/", "/signin", "/signup", "/forgotpassword"];
+  const adminRoutes = ["/admin-login", "/admin-dashboard", "/admin/users", "/admin/posts", "/admin/challenges", "/admin/meditation", "/admin/blogs", "/admin/analytics", "/admin/reports", "/admin/settings"];
+  const noNavbarRoutes = ["/dashboard"];
+  const noFooterRoutes = ["/dashboard", "/admin-login", "/admin-dashboard", "/admin/users", "/admin/posts", "/admin/challenges", "/admin/meditation", "/admin/blogs", "/admin/analytics", "/admin/reports", "/admin/settings"];
+
+  const pathname = location.pathname.toLowerCase();
+
+  const isPublicPage = publicRoutes.includes(pathname);
+  const isAdminPage = adminRoutes.includes(pathname);
   const isNoNavbarPage = noNavbarRoutes.includes(pathname);
   const isNoFooterPage = noFooterRoutes.includes(pathname);
 
   return (
     <>
-<<<<<<< HEAD
-      {isPublicPage ? <Navbars /> : <Navbar />}
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/SignIn" element={<SignIn />} />
-        <Route path="/SignUp" element={<SignUp />} />
-        <Route path="/ForgotPassword" element={<ForgotPassword />} />
-        <Route path="/Home" element={<Home />} />
-        <Route path="/FreedomWall" element={<FreedomWall />} />
-        <Route path="/Meditation" element={<Meditation />} />
-        <Route path="/WellnessBlog" element={<WellnessBlog />} />
-        <Route path="/Challenges" element={<Challenges />} />
-        <Route path="/Profile" element={<Profile />} />
-        <Route path="/guide-detail" element={<GuideDetail />} /> {/* ✅ new detail page */}
-      </Routes>
-      <Footer />
-=======
-      {!isNoNavbarPage && (isAuthenticated ? <Navbar /> : <Navbars />)}
-      <Outlet />
-      {!isNoFooterPage && <Footer />} {/* ✅ only render Footer if not in the list */}
->>>>>>> 57ff8e4b74e77a42d7cdcfa3fec29db6d45b1460
-    </>
-  );
-}
+      {/* Render appropriate navbar based on route */}
+      {isAdminPage && pathname !== "/admin-login" && <AdminNavbar />}
+      {!isNoNavbarPage && !isAdminPage && (isPublicPage ? <Navbars /> : <Navbar />)}
 
-// ✅ Wrap Layout with AuthProvider
-function LayoutWrapper() {
-  return (
-    <AuthProvider>
-      <Layout />
-    </AuthProvider>
+      {/* Render the page content */}
+      <Outlet />
+
+      {/* Render Footer if not excluded */}
+      {!isNoFooterPage && <Footer />}
+    </>
   );
 }
 
@@ -81,19 +77,31 @@ const router = createBrowserRouter(
   [
     {
       path: "/",
-      element: <LayoutWrapper />, // ✅ wrapped layout
+      element: <Layout />,
       children: [
         { path: "/", element: <Landing /> },
-        { path: "SignIn", element: <SignIn /> },
-        { path: "SignUp", element: <SignUp /> },
-        { path: "ForgotPassword", element: <ForgotPassword /> },
-        { path: "Home", element: <Home /> },
-        { path: "FreedomWall", element: <FreedomWall /> },
-        { path: "Meditation", element: <Meditation /> },
-        { path: "WellnessBlog", element: <WellnessBlog /> },
-        { path: "Challenges", element: <Challenges /> },
-        { path: "Profile", element: <Profile /> },
-        { path: "Dashboard", element: <Dashboard /> },
+        { path: "signin", element: <SignIn /> },
+        { path: "signup", element: <SignUp /> },
+        { path: "forgotpassword", element: <ForgotPassword /> },
+        { path: "home", element: <Home /> },
+        { path: "freedomwall", element: <FreedomWall /> },
+        { path: "meditation", element: <Meditation /> },
+        { path: "wellnessblog", element: <WellnessBlog /> },
+        { path: "challenges", element: <Challenges /> },
+        { path: "profile", element: <Profile /> },
+        { path: "dashboard", element: <Dashboard /> },
+        { path: "admin-login", element: <AdminLogin /> },
+        { path: "admin-dashboard", element: <AdminDashboard /> },
+        { path: "admin/users", element: <AdminUsers /> },
+        { path: "admin/posts", element: <AdminPosts /> },
+        { path: "admin/challenges", element: <AdminChallenges /> },
+        { path: "admin/meditation", element: <AdminMeditation /> },
+        { path: "admin/blogs", element: <AdminBlogs /> },
+        { path: "admin/analytics", element: <AdminAnalytics /> },
+        { path: "admin/reports", element: <AdminReports /> },
+        { path: "admin/settings", element: <AdminSettings /> },
+        { path: "guide-detail", element: <GuideDetail /> },
+        { path: "blogdetail", element: <BlogDetail /> },
       ],
     },
   ],
@@ -106,11 +114,7 @@ const router = createBrowserRouter(
 );
 
 function App() {
-  return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

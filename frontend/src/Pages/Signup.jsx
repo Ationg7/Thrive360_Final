@@ -2,6 +2,7 @@ import logo from '../assets/Images/logo.png';
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,13 +10,16 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      setError("Passwords do not match");
       return;
     }
 
@@ -35,19 +39,21 @@ const SignUp = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // Use AuthContext to store token and user info
+        login(data.token, data.user);
         alert("Registration successful!");
-        navigate("/SignIn");
+        navigate("/Home");
       } else {
         if (data.errors) {
           const errorMessages = Object.values(data.errors).flat().join('\n');
-          alert("Validation errors:\n" + errorMessages);
+          setError("Validation errors:\n" + errorMessages);
         } else {
-          alert("Error: " + (data.message || "Something went wrong"));
+          setError(data.message || "Something went wrong");
         }
       }
     } catch (error) {
       console.error("Request failed:", error);
-      alert("Network error: " + error.message);
+      setError("Network error: " + error.message);
     }
   };
 
@@ -121,6 +127,8 @@ const SignUp = () => {
               Register
             </button>
           </form>
+
+          {error && <p className="text-danger mt-2">{error}</p>}
 
           <p className="signup-text">
             Already have an account?{" "}

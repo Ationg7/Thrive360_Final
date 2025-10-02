@@ -27,12 +27,18 @@ class AuthController extends Controller
             $user = User::create([
                 'email'    => $request->email,
                 'password' => Hash::make($request->password),
+                'role'     => 'user', // Set default role
+                'is_active' => true,  // Set default active status
             ]);
+
+            // Create token for the user
+            $token = $user->createToken('auth-token')->plainTextToken;
 
             \Log::info('User created successfully', ['user_id' => $user->id, 'email' => $user->email]);
 
             return response()->json([
                 'message' => 'User registered successfully!',
+                'token'   => $token,
                 'user'    => $user
             ], 201);
 
@@ -66,10 +72,14 @@ class AuthController extends Controller
             if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
                 $user = Auth::user();
                 
+                // Create token for the user
+                $token = $user->createToken('auth-token')->plainTextToken;
+                
                 \Log::info('User logged in successfully', ['user_id' => $user->id, 'email' => $user->email]);
 
                 return response()->json([
                     'message' => 'Login successful!',
+                    'token'   => $token,
                     'user'    => $user
                 ], 200);
             } else {
@@ -105,5 +115,9 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function storeMeditation(Request $request) {
+        // Validate and store meditation logic here
     }
 }

@@ -1,86 +1,126 @@
-import React, { useState } from "react";
-import { Container, Card, Form, Modal, Button } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Container, Card, Form, Modal, Button, Dropdown, Alert } from "react-bootstrap";
 import { Heart, Send, Image, Smile } from "lucide-react";
-import EmojiPicker from "emoji-picker-react"; // Import Emoji Picker
+import { FaEllipsisV } from "react-icons/fa";
+import EmojiPicker from "emoji-picker-react";
+import { useAuth } from "../AuthContext";
+import { freedomWallAPI } from "../services/api";
+import "./FreedomWall.css";
 
 const FreedomWall = () => {
-  const initialPosts = [
-    {
-      id: 1,
-      author: "Anonymous",
-      date: "March 21 at 6:59 PM",
-      content:
-        "I was doing fine, but you just came and ruined my peace of mind. PLS.. let me go back to the time when I completely didn’t have any idea you exist. It is hard to sleep when there’s so much on your mind.",
-      likes: 34,
-      shares: 50,
-      liked: false,
-      shared: false,
-      image: null,
-    },
-    {
-      id: 2,
-      author: "Anonymous",
-      date: "March 21 at 6:59 PM",
-      content:
-        '"How is your life?" Ito unti-unting nilulunod ng kalungkutan na paulit-ulit lang...',
-      likes: 120,
-      shares: 113,
-      liked: false,
-      shared: false,
-      image: null,
-    },
-  ];
+  const { isLoggedIn } = useAuth(); 
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [hiddenPosts, setHiddenPosts] = useState([]);
+  const [showUndo, setShowUndo] = useState(false);
 
-  const [posts, setPosts] = useState(initialPosts);
   const [showPostModal, setShowPostModal] = useState(false);
   const [newPost, setNewPost] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const handleLike = (id) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === id
-          ? { ...post, likes: post.liked ? post.likes - 1 : post.likes + 1, liked: !post.liked }
-          : post
-      )
-    );
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportPostId, setReportPostId] = useState(null);
+  const [selectedReason, setSelectedReason] = useState("");
+
+  const reportReasons = [
+    "Spam or misleading",
+    "Harassment or bullying",
+    "Hate speech or violence",
+    "Nudity or sexual content",
+    "Self-harm or dangerous acts",
+    "Other",
+  ];
+
+  // Load posts on component mount
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  const loadPosts = async () => {
+    try {
+      setLoading(true);
+      const postsData = await freedomWallAPI.getPosts();
+      setPosts(postsData);
+    } catch (err) {
+      setError('Failed to load posts');
+      console.error('Error loading posts:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleShare = (id) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === id
-          ? { ...post, shares: post.shared ? post.shares - 1 : post.shares + 1, shared: !post.shared }
-          : post
-      )
-    );
+  const badWords = ["badword1", "badword2", "badword3"];
+  const censorText = (text) => {
+    let censored = text;
+    badWords.forEach((word) => {
+      const regex = new RegExp(word, "gi");
+      censored = censored.replace(regex, "*".repeat(word.length));
+    });
+    return censored;
   };
 
-  const handlePost = () => {
-    if (newPost.trim() === "" && !selectedImage) return; // Prevent empty posts
+  const handleLike = async (id) => {
+    try {
+      const result = await freedomWallAPI.likePost(id);
+      setPosts(posts.map(post => 
+        post.id === id 
+          ? { ...post, likes: result.likes }
+          : post
+      ));
+    } catch (err) {
+      console.error('Error liking post:', err);
+    }
+  };
 
-    const newPostEntry = {
-      id: posts.length + 1,
-      author: "Anonymous",
-      date: new Date().toLocaleString(),
-      content: newPost,
-      likes: 0,
-      shares: 0,
-      liked: false,
-      shared: false,
-      image: selectedImage,
-    };
+  const handleShare = async (id) => {
+    try {
+      const result = await freedomWallAPI.sharePost(id);
+      setPosts(posts.map(post => 
+        post.id === id 
+          ? { ...post, shares: result.shares }
+          : post
+      ));
+    } catch (err) {
+      console.error('Error sharing post:', err);
+    }
+  };
 
-    setPosts([newPostEntry, ...posts]);
-    setNewPost("");
-    setSelectedImage(null);
-    setShowPostModal(false);
+  const handlePost = async () => {
+    if (newPost.trim() === "" && !selectedImage) return;
+
+    try {
+      const postData = {
+        content: newPost,
+        image: selectedImage,
+      };
+
+      const newPostEntry = await freedomWallAPI.createPost(postData);
+      
+      // Format the response to match our UI expectations
+      const formattedPost = {
+        ...newPostEntry,
+        author: "Anonymous",
+        date: new Date(newPostEntry.created_at).toLocaleString(),
+        liked: false,
+        shared: false,
+        image: newPostEntry.image_path ? `/storage/${newPostEntry.image_path}` : null,
+      };
+
+      setPosts([formattedPost, ...posts]);
+      setNewPost("");
+      setSelectedImage(null);
+      setShowPostModal(false);
+    } catch (err) {
+      setError('Failed to create post');
+      console.error('Error creating post:', err);
+    }
   };
 
   const handleEmojiClick = (emojiObject) => {
     setNewPost((prev) => prev + emojiObject.emoji);
-    setShowEmojiPicker(false); // Close emoji picker after selecting
+    setShowEmojiPicker(false);
   };
 
   const handleImageUpload = (event) => {
@@ -94,6 +134,34 @@ const FreedomWall = () => {
     }
   };
 
+  const openReportModal = (id) => {
+    setReportPostId(id);
+    setShowReportModal(true);
+  };
+
+  const submitReport = () => {
+    console.log(`Post ${reportPostId} reported for reason: ${selectedReason}`);
+    setShowReportModal(false);
+    setSelectedReason("");
+    alert("Report submitted. Thank you for your feedback!");
+  };
+
+  const handleHide = (id) => {
+    const postToHide = posts.find((post) => post.id === id);
+    if (postToHide) {
+      setHiddenPosts([postToHide, ...hiddenPosts]);
+      setPosts(posts.filter((post) => post.id !== id));
+      setShowUndo(true);
+      setTimeout(() => setShowUndo(false), 5000);
+    }
+  };
+
+  const undoHide = () => {
+    setPosts([...hiddenPosts, ...posts]);
+    setHiddenPosts([]);
+    setShowUndo(false);
+  };
+
   return (
     <Container className="freedom-wall-container">
       <div className="header">
@@ -102,7 +170,21 @@ const FreedomWall = () => {
           Express yourself freely, share your thoughts, struggles, victories, or uplifting messages with our community.
         </p>
       </div>
-    
+
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
+      {loading && (
+        <div className="text-center my-4">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      )}
+
       {/* New Post Input */}
       <Card className="post-input-card" onClick={() => setShowPostModal(true)}>
         <div className="post-input">
@@ -111,12 +193,12 @@ const FreedomWall = () => {
         </div>
       </Card>
 
-      {/* Floating Post Window */}
+      {/* Floating Post Modal with updated background */}
       <Modal show={showPostModal} onHide={() => setShowPostModal(false)} centered>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton style={{ backgroundColor: "#e6f4ea" }}>
           <Modal.Title>Create Post</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ backgroundColor: "#f7fff9" }}>
           <div className="post-modal-content">
             <div className="post-header">
               <div className="avatar">A</div>
@@ -130,15 +212,11 @@ const FreedomWall = () => {
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
             />
-
-            {/* Image Preview */}
             {selectedImage && (
               <div className="image-preview">
                 <img src={selectedImage} alt="Selected" className="img-fluid" />
               </div>
             )}
-
-            {/* Add to your post section */}
             <div className="add-post-container">
               <Button variant="light" className="add-post-btn">
                 Add to your post
@@ -153,24 +231,96 @@ const FreedomWall = () => {
                     style={{ display: "none" }}
                     onChange={handleImageUpload}
                   />
-                  <Smile size={20} className="post-icon" onClick={() => setShowEmojiPicker(!showEmojiPicker)} />
+                  <Smile
+                    size={20}
+                    className="post-icon"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  />
                 </div>
               </Button>
             </div>
-
-            {/* Emoji Picker */}
             {showEmojiPicker && <EmojiPicker onEmojiClick={handleEmojiClick} />}
           </div>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer style={{ backgroundColor: "#e6f4ea" }}>
           <Button variant="success" onClick={handlePost}>Post</Button>
         </Modal.Footer>
       </Modal>
 
+      {/* Floating Report Modal */}
+      <Modal show={showReportModal} onHide={() => setShowReportModal(false)} centered className="report-modal">
+        <Modal.Header closeButton style={{ backgroundColor: "#e6f4ea" }}>
+          <Modal.Title>Report Post</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ backgroundColor: "#f7fff9" }}>
+          <p>Please select a reason for reporting this post:</p>
+          {reportReasons.map((reason) => (
+            <Form.Check
+              key={reason}
+              type="radio"
+              id={`report-${reason}`}
+              label={reason}
+              name="reportReason"
+              value={reason}
+              checked={selectedReason === reason}
+              onChange={(e) => setSelectedReason(e.target.value)}
+              className="mb-2"
+            />
+          ))}
+        </Modal.Body>
+        <Modal.Footer style={{ backgroundColor: "#e6f4ea" }}>
+          <Button variant="secondary" onClick={() => setShowReportModal(false)}>Cancel</Button>
+          <Button variant="success" onClick={submitReport} disabled={!selectedReason}>Submit</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Undo Notification */}
+      {showUndo && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            backgroundColor: "#e6f4ea",
+            padding: "10px 20px",
+            borderRadius: "8px",
+            boxShadow: "0px 2px 8px rgba(0,0,0,0.2)",
+            zIndex: 9999,
+          }}
+        >
+          Post hidden.{" "}
+          <span
+            style={{ color: "green", cursor: "pointer", fontWeight: "bold" }}
+            onClick={undoHide}
+          >
+            Undo
+          </span>
+        </div>
+      )}
+
       {/* Displaying Posts */}
       <div className="post-list">
         {posts.map((post) => (
-          <Card className="post-card" key={post.id}>
+          <Card className="post-card position-relative" key={post.id}>
+            {/* Three-dot menu - only show for logged-in users */}
+            {isLoggedIn && (
+              <Dropdown className="position-absolute" style={{ top: "10px", right: "10px" }}>
+                <Dropdown.Toggle
+                  variant="light"
+                  size="sm"
+                  className="p-0 border-0 d-flex align-items-center justify-content-center"
+                  bsPrefix="btn"
+                  id={`dropdown-${post.id}`}
+                >
+                  <FaEllipsisV />
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => openReportModal(post.id)}>Report</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleHide(post.id)}>Hide</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            )}
+
             <Card.Body>
               <div className="post-header">
                 <div className="avatar">A</div>
@@ -179,11 +329,14 @@ const FreedomWall = () => {
                   <Card.Subtitle className="post-date">{post.date}</Card.Subtitle>
                 </div>
               </div>
-              <Card.Text className="post-content">{post.content}</Card.Text>
-
-              {/* Display Image if available */}
-              {post.image && <img src={post.image} alt="Post" className="img-fluid post-image" />}
-
+              <Card.Text className={`post-content ${!isLoggedIn ? 'blurred-content' : ''}`}>
+                {censorText(post.content)}
+              </Card.Text>
+              {post.image && (
+                <div className={`post-image-container ${!isLoggedIn ? 'blurred-content' : ''}`}>
+                  <img src={post.image} alt="Post" className="img-fluid post-image" />
+                </div>
+              )}
               <div className="post-actions">
                 <div className="action-group">
                   <div className="like-button" onClick={() => handleLike(post.id)}>
@@ -197,6 +350,15 @@ const FreedomWall = () => {
                 </div>
               </div>
             </Card.Body>
+            
+            {/* Blur overlay for guests */}
+            {!isLoggedIn && (
+              <div className="post-blur-overlay">
+                <div className="blur-message">
+                  <p>Log in to view and interact with posts</p>
+                </div>
+              </div>
+            )}
           </Card>
         ))}
       </div>
@@ -205,3 +367,4 @@ const FreedomWall = () => {
 };
 
 export default FreedomWall;
+
