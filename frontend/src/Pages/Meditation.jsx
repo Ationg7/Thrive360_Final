@@ -1,5 +1,5 @@
 // Meditation.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Card } from "react-bootstrap";
 import { useAuth } from "../AuthContext";
 import FloatingPopup from "../Components/FloatingPopup";
@@ -13,7 +13,31 @@ const Meditation = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate(); // ✅ Initialize navigate
 
-  const guides = {
+  const [guides, setGuides] = useState({ Meditation: [], Stretching: [], Workouts: [] });
+
+  useEffect(() => {
+    const fetchMeditations = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/admin/meditation');
+        if (!res.ok) throw new Error('Failed to load meditations');
+        const data = await res.json();
+        const mapped = (Array.isArray(data) ? data : []).map(m => ({
+          title: m.title,
+          category: m.category || 'Meditation',
+          description: m.description,
+          image: m.image_url || 'https://via.placeholder.com/600x400?text=Meditation',
+          steps: []
+        }));
+        setGuides({ Meditation: mapped, Stretching: [], Workouts: [] });
+      } catch (e) {
+        console.error('Error fetching meditations:', e);
+        setGuides({ Meditation: [], Stretching: [], Workouts: [] });
+      }
+    };
+    fetchMeditations();
+  }, []);
+
+  const guidesStatic = {
     Meditation: [
       {
         title: "Beginner’s Breath Awareness",

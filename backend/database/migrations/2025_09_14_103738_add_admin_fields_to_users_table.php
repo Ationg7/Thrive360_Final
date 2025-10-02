@@ -12,9 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('name')->after('id');
-            $table->enum('role', ['user', 'admin'])->default('user')->after('email');
-            $table->boolean('is_active')->default(true)->after('role');
+            // Add columns only if they don't already exist
+            if (!Schema::hasColumn('users', 'role')) {
+                $table->enum('role', ['user', 'admin'])->default('user')->after('email');
+            }
+            if (!Schema::hasColumn('users', 'is_active')) {
+                $table->boolean('is_active')->default(true)->after('role');
+            }
         });
     }
 
@@ -24,7 +28,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['name', 'role', 'is_active']);
+            if (Schema::hasColumn('users', 'role')) {
+                $table->dropColumn('role');
+            }
+            if (Schema::hasColumn('users', 'is_active')) {
+                $table->dropColumn('is_active');
+            }
         });
     }
 };

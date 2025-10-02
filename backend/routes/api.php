@@ -23,6 +23,7 @@ Route::get('/freedom-wall/posts', [FreedomWallController::class, 'index']);
 Route::post('/freedom-wall/posts', [FreedomWallController::class, 'store']);
 Route::post('/freedom-wall/posts/{id}/like', [FreedomWallController::class, 'like']);
 Route::post('/freedom-wall/posts/{id}/share', [FreedomWallController::class, 'share']);
+Route::post('/freedom-wall/posts/{id}/report', [FreedomWallController::class, 'report']);
 
 // Challenge routes (public)
 Route::get('/challenges', [ChallengeController::class, 'index']);
@@ -52,7 +53,29 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/posts', [AdminController::class, 'getPosts']);
         Route::delete('/posts/{id}', [AdminController::class, 'deletePost']);
         Route::get('/analytics', [AdminController::class, 'getAnalytics']);
+        
+        // Meditation routes
+        Route::get('/meditation', [AdminController::class, 'getMeditations']);
         Route::post('/meditation', [AdminController::class, 'storeMeditation']);
+        Route::delete('/meditation/{id}', [AdminController::class, 'deleteMeditation']);
+        
+        // Blog routes
+        Route::get('/blogs', [AdminController::class, 'getBlogs']);
+        Route::post('/blogs', [AdminController::class, 'storeBlog']);
+        Route::delete('/blogs/{id}', [AdminController::class, 'deleteBlog']);
+
+        // Report routes
+        Route::get('/reports', [AdminController::class, 'getReports']);
+        Route::get('/reports/stats', [AdminController::class, 'getReportsStats']);
+        Route::put('/reports/{id}/status', [AdminController::class, 'updateReportStatus']);
+        Route::delete('/reports/{id}/post', [AdminController::class, 'deleteReportedPost']);
+
+        // Psychiatrist routes
+        Route::get('/psychiatrists', [AdminController::class, 'getPsychiatrists']);
+        Route::post('/psychiatrists', [AdminController::class, 'storePsychiatrist']);
+        Route::put('/psychiatrists/{id}', [AdminController::class, 'updatePsychiatrist']);
+        Route::delete('/psychiatrists/{id}', [AdminController::class, 'deletePsychiatrist']);
+        Route::put('/psychiatrists/{id}/availability', [AdminController::class, 'updatePsychiatristAvailability']);
 
         // --- Admin Challenge Routes ---
         Route::get('/challenges', [AdminChallengeController::class, 'index']);
@@ -65,6 +88,11 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminController::class, 'login']);
     Route::post('/register', [AdminController::class, 'register']);
+
+    // Public content endpoints for frontend (no admin middleware)
+    Route::get('/blogs', [AdminController::class, 'getBlogs']);
+    Route::get('/meditation', [AdminController::class, 'getMeditations']);
+    Route::get('/psychiatrists/active', [AdminController::class, 'getActivePsychiatrists']);
 });
 
 // Test route

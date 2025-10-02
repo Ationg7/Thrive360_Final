@@ -111,7 +111,16 @@ const AdminBlogs = memo(() => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        let message = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData?.message) message = errorData.message;
+          if (errorData?.errors) {
+            const firstError = Object.values(errorData.errors)[0];
+            if (Array.isArray(firstError) && firstError.length) message = firstError[0];
+          }
+        } catch {}
+        throw new Error(message);
       }
 
       const newBlog = await response.json();
@@ -282,11 +291,18 @@ const AdminBlogs = memo(() => {
                   
                   <div className="blog-meta">
                     <div className="blog-tags">
-                      {blog.tags && blog.tags.split(',').map((tag, index) => (
-                        <span key={index} className="tag">
-                          {tag.trim()}
-                        </span>
-                      ))}
+                      {(() => {
+                        const tagList = Array.isArray(blog.tags)
+                          ? blog.tags
+                          : (typeof blog.tags === 'string' && blog.tags.length > 0
+                              ? blog.tags.split(',')
+                              : []);
+                        return tagList.map((tag, index) => (
+                          <span key={index} className="tag">
+                            {String(tag).trim()}
+                          </span>
+                        ));
+                      })()}
                     </div>
                     <div className="blog-created">
                       <span className="meta-icon">📅</span>

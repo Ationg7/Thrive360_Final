@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -12,48 +12,30 @@ const WellnessBlog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  const blogs = [
-    {
-      id: 1,
-      title: "Finding Balance: How to Manage Academic Stress",
-      category: "Mental Health",
-      image:
-        "https://i.pinimg.com/474x/1e/e6/6a/1ee66a4517d068f5db3b0443684b748b.jpg",
-      fullText: `Academic stress is something that almost every student faces...`,
-      author: "Dr. Channy San",
-      topFoods: ["Dark Chocolate", "Green Tea", "Blueberries", "Salmon", "Walnuts"],
-    },
-    {
-      id: 2,
-      title: "Brain Foods: Eating for Academic Success",
-      category: "Nutrition",
-      image:
-        "https://i.pinimg.com/474x/86/6a/d0/866ad0b1e99a5a6a7809ebe4801b2147.jpg",
-      fullText: `The food you eat has a direct impact on how your brain functions...`,
-      author: "Dr. Channy San",
-      topFoods: ["Salmon", "Walnuts", "Flaxseeds", "Blueberries", "Dark Chocolate"],
-    },
-    {
-      id: 3,
-      title: "The Student’s Guide to Quality Sleep",
-      category: "Physical Wellness",
-      image:
-        "https://i.pinimg.com/474x/0b/70/38/0b70385eece9929f2460e7e18f8a15e5.jpg",
-      fullText: `Quality sleep is often overlooked by students...`,
-      author: "Dr. Channy San",
-      topFoods: ["Almonds", "Kiwi", "Chamomile Tea", "Turkey", "Bananas"],
-    },
-    {
-      id: 4,
-      title: "Stress-Free Studying: Mind Hacks for Exams",
-      category: "Stress Management",
-      image:
-        "https://i.pinimg.com/474x/1e/3e/88/1e3e8884e34fa76dfcfe969d1ec0bb88.jpg",
-      fullText: `Exams don’t have to be overwhelming if you approach studying...`,
-      author: "Dr. Channy San",
-      topFoods: ["Dark Chocolate", "Green Tea", "Blueberries", "Salmon", "Nuts"],
-    },
-  ];
+  const [blogs, setBlogs] = useState([]);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/admin/blogs');
+        if (!res.ok) throw new Error('Failed to load blogs');
+        const data = await res.json();
+        const normalized = (Array.isArray(data) ? data : []).map(b => ({
+          id: b.id,
+          title: b.title,
+          category: b.category || 'General',
+          image: b.image_url || 'https://via.placeholder.com/600x400?text=Blog',
+          fullText: b.content,
+          author: b.author_name || 'Admin'
+        }));
+        setBlogs(normalized);
+      } catch (e) {
+        console.error('Error fetching blogs:', e);
+        setBlogs([]);
+      }
+    };
+    fetchBlogs();
+  }, []);
 
   const filteredBlogs =
     activeCategory === "All Topics"

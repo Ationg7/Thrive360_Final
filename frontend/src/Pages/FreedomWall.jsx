@@ -1,17 +1,43 @@
 import React, { useState, useEffect } from "react";
-import { Container, Card, Form, Modal, Button, Dropdown, Alert } from "react-bootstrap";
+import { Container, Card, Form, Modal, Button, Dropdown } from "react-bootstrap";
 import { Heart, Send, Image, Smile } from "lucide-react";
 import { FaEllipsisV } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
 import { useAuth } from "../AuthContext";
-import { freedomWallAPI } from "../services/api";
-import "./FreedomWall.css";
+import { Link } from "react-router-dom";
+import "../App.css";
 
 const FreedomWall = () => {
-  const { isLoggedIn } = useAuth(); 
+  const { isLoggedIn } = useAuth();
+  
+  const initialPosts = [
+    {
+      id: 1,
+      author: "Anonymous",
+      date: "March 21 at 6:59 PM",
+      content:
+        "I was doing fine, but you just came and ruined my peace of mind. PLS.. let me go back to the time when I completely didn't have any idea you exist. It is hard to sleep when there's so much on your mind.",
+      likes: 34,
+      shares: 50,
+      liked: false,
+      shared: false,
+      image: null,
+    },
+    {
+      id: 2,
+      author: "Anonymous",
+      date: "March 21 at 6:59 PM",
+      content:
+        '"How is your life?" Ito unti-unting nilulunod ng kalungkutan na paulit-ulit lang...',
+      likes: 120,
+      shares: 113,
+      liked: false,
+      shared: false,
+      image: null,
+    },
+  ];
+
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [hiddenPosts, setHiddenPosts] = useState([]);
   const [showUndo, setShowUndo] = useState(false);
 
@@ -23,33 +49,16 @@ const FreedomWall = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportPostId, setReportPostId] = useState(null);
   const [selectedReason, setSelectedReason] = useState("");
+  const [selectedReasonCustom, setSelectedReasonCustom] = useState("");
 
   const reportReasons = [
-    "Spam or misleading",
-    "Harassment or bullying",
-    "Hate speech or violence",
-    "Nudity or sexual content",
-    "Self-harm or dangerous acts",
-    "Other",
+    { value: "spam", label: "Spam or misleading" },
+    { value: "harassment", label: "Harassment or bullying" },
+    { value: "hate_speech", label: "Hate speech or violence" },
+    { value: "nudity", label: "Nudity or sexual content" },
+    { value: "self_harm", label: "Self-harm or dangerous acts" },
+    { value: "other", label: "Other" },
   ];
-
-  // Load posts on component mount
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
-  const loadPosts = async () => {
-    try {
-      setLoading(true);
-      const postsData = await freedomWallAPI.getPosts();
-      setPosts(postsData);
-    } catch (err) {
-      setError('Failed to load posts');
-      console.error('Error loading posts:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const badWords = ["badword1", "badword2", "badword3"];
   const censorText = (text) => {
@@ -61,60 +70,84 @@ const FreedomWall = () => {
     return censored;
   };
 
-  const handleLike = async (id) => {
-    try {
-      const result = await freedomWallAPI.likePost(id);
-      setPosts(posts.map(post => 
-        post.id === id 
-          ? { ...post, likes: result.likes }
+  const handleLike = (id) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === id
+          ? { ...post, likes: post.liked ? post.likes - 1 : post.likes + 1, liked: !post.liked }
           : post
-      ));
-    } catch (err) {
-      console.error('Error liking post:', err);
-    }
+      )
+    );
   };
 
-  const handleShare = async (id) => {
-    try {
-      const result = await freedomWallAPI.sharePost(id);
-      setPosts(posts.map(post => 
-        post.id === id 
-          ? { ...post, shares: result.shares }
+  const handleShare = (id) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === id
+          ? { ...post, shares: post.shared ? post.shares - 1 : post.shares + 1, shared: !post.shared }
           : post
-      ));
-    } catch (err) {
-      console.error('Error sharing post:', err);
-    }
+      )
+    );
   };
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/freedom-wall/posts');
+        if (!res.ok) throw new Error('Failed to load posts');
+        const data = await res.json();
+        const normalized = (Array.isArray(data) ? data : []).map(p => ({
+          id: p.id,
+          author: p.author || 'Anonymous',
+          date: new Date(p.created_at).toLocaleString(),
+          content: p.content,
+          likes: p.likes || 0,
+          shares: p.shares || 0,
+          liked: false,
+          shared: false,
+          image: p.image_path ? (`http://127.0.0.1:8000/storage/${p.image_path}`) : null
+        }));
+        setPosts(normalized);
+      } catch (e) {
+        console.error('Error fetching posts:', e);
+        setPosts(initialPosts);
+      }
+    };
+    fetchPosts();
+  }, []);
 
   const handlePost = async () => {
     if (newPost.trim() === "" && !selectedImage) return;
-
     try {
-      const postData = {
-        content: newPost,
-        image: selectedImage,
-      };
-
-      const newPostEntry = await freedomWallAPI.createPost(postData);
-      
-      // Format the response to match our UI expectations
-      const formattedPost = {
-        ...newPostEntry,
-        author: "Anonymous",
-        date: new Date(newPostEntry.created_at).toLocaleString(),
+      const formData = new FormData();
+      formData.append('content', newPost);
+      if (selectedImage instanceof File) {
+        formData.append('image', selectedImage);
+      }
+      const res = await fetch('http://127.0.0.1:8000/api/freedom-wall/posts', {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) throw new Error('Failed to post');
+      const p = await res.json();
+      const entry = {
+        id: p.id,
+        author: p.author || 'Anonymous',
+        date: new Date(p.created_at).toLocaleString(),
+        content: p.content,
+        likes: p.likes || 0,
+        shares: p.shares || 0,
         liked: false,
         shared: false,
-        image: newPostEntry.image_path ? `/storage/${newPostEntry.image_path}` : null,
+        image: p.image_path ? (`http://127.0.0.1:8000/storage/${p.image_path}`) : null
       };
-
-      setPosts([formattedPost, ...posts]);
+      setPosts([entry, ...posts]);
       setNewPost("");
       setSelectedImage(null);
       setShowPostModal(false);
-    } catch (err) {
-      setError('Failed to create post');
-      console.error('Error creating post:', err);
+    } catch (e) {
+      console.error('Error creating post:', e);
+      alert('Failed to create post. Please try again.');
     }
   };
 
@@ -126,11 +159,7 @@ const FreedomWall = () => {
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      setSelectedImage(file);
     }
   };
 
@@ -139,10 +168,46 @@ const FreedomWall = () => {
     setShowReportModal(true);
   };
 
-  const submitReport = () => {
-    console.log(`Post ${reportPostId} reported for reason: ${selectedReason}`);
+  const submitReport = async () => {
+    if (!selectedReason) {
+      alert('Please select a reason for reporting this post.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/freedom-wall/posts/${reportPostId}/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: selectedReason,
+          custom_reason: selectedReason === 'other' ? selectedReasonCustom : null,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message);
+        setShowReportModal(false);
+        setReportPostId(null);
+        setSelectedReason('');
+        setSelectedReasonCustom('');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to submit report. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('An error occurred while submitting the report. Please try again.');
+    }
+  };
+
+  const oldSubmitReport = (reason) => {
+    console.log(`Post ${reportPostId} reported for reason: ${reason}`);
     setShowReportModal(false);
     setSelectedReason("");
+    setSelectedReasonCustom("");
     alert("Report submitted. Thank you for your feedback!");
   };
 
@@ -171,56 +236,127 @@ const FreedomWall = () => {
         </p>
       </div>
 
-      {error && (
-        <Alert variant="danger" dismissible onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+      {/* Post Input - Available for both logged in and guest users */}
+      <Card className="post-input-card" onClick={() => setShowPostModal(true)} style={{ cursor: 'pointer' }}>
+        <div className="post-input d-flex align-items-center">
+          <div className="avatar me-3" style={{ 
+            background: 'linear-gradient(135deg, #28a745, #20c997)',
+            boxShadow: '0 2px 8px rgba(40, 167, 69, 0.3)'
+          }}>
+            A
+          </div>
+          <Form.Control 
+            type="text" 
+            placeholder={isLoggedIn ? "What's on your mind? Share your thoughts..." : "Express yourself anonymously... Share your feelings freely"} 
+            className="post-input-field" 
+            readOnly 
+            style={{
+              backgroundColor: '#f8f9fa',
+              border: 'none',
+              fontSize: '1rem',
+              color: '#6c757d'
+            }}
+          />
+          {!isLoggedIn && (
+            <small className="text-muted ms-2" style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>
+              Anonymous posting
+            </small>
+          )}
+        </div>
+      </Card>
 
-      {loading && (
-        <div className="text-center my-4">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
+      {/* Guest user info banner */}
+      {!isLoggedIn && (
+        <div className="alert alert-info mb-4" style={{ 
+          maxWidth: '1000px', 
+          width: '100%',
+          borderRadius: '12px',
+          border: '1px solid #bee5eb',
+          backgroundColor: '#d1ecf1'
+        }}>
+          <div className="d-flex align-items-center">
+            <span className="me-2">ℹ️</span>
+            <div className="flex-grow-1">
+              <strong>Anonymous Posting:</strong> You can share your thoughts freely. 
+              <Link to="/signin" className="ms-2 text-decoration-none fw-bold">Sign in</Link> to view community posts and interact with others.
+            </div>
           </div>
         </div>
       )}
 
-      {/* New Post Input */}
-      <Card className="post-input-card" onClick={() => setShowPostModal(true)}>
-        <div className="post-input">
-          <div className="avatar">A</div>
-          <Form.Control type="text" placeholder="What's on your mind?" className="post-input-field" readOnly />
-        </div>
-      </Card>
-
-      {/* Floating Post Modal with updated background */}
+      {/* Floating Post Modal */}
       <Modal show={showPostModal} onHide={() => setShowPostModal(false)} centered>
         <Modal.Header closeButton style={{ backgroundColor: "#e6f4ea" }}>
-          <Modal.Title>Create Post</Modal.Title>
+          <Modal.Title>
+            {isLoggedIn ? "Create Post" : "Share Anonymously"}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body style={{ backgroundColor: "#f7fff9" }}>
-          <div className="post-modal-content">
-            <div className="post-header">
-              <div className="avatar">A</div>
-              <span className="author-name">Anonymous</span>
+          {/* Guest user notice */}
+          {!isLoggedIn && (
+            <div className="alert alert-warning mb-3" style={{ 
+              borderRadius: '8px',
+              backgroundColor: '#fff3cd',
+              borderColor: '#ffeaa7',
+              fontSize: '0.9rem'
+            }}>
+              <div className="d-flex align-items-center">
+                <span className="me-2">🔒</span>
+                <div>
+                  <strong>Anonymous Mode:</strong> Your post will be shared anonymously. 
+                  <Link to="/signin" className="ms-1 text-decoration-none">Sign in</Link> to interact with the community.
+                </div>
+              </div>
             </div>
+          )}
+          
+          <div className="post-modal-content">
+            {/* Modal Header */}
+            <div className="post-header d-flex align-items-center mb-2">
+              <div className="avatar me-2" style={{ 
+                background: 'linear-gradient(135deg, #28a745, #20c997)',
+                boxShadow: '0 2px 8px rgba(40, 167, 69, 0.3)'
+              }}>
+                A
+              </div>
+              <div className="author-info d-flex flex-column">
+                <Card.Title className="post-author mb-0">Anonymous</Card.Title>
+                <Card.Subtitle className="post-date">{new Date().toLocaleString()}</Card.Subtitle>
+              </div>
+            </div>
+
+            {/* Textarea */}
             <Form.Control
               as="textarea"
-              rows={3}
-              placeholder="What's on your mind?"
-              className="post-textarea"
+              rows={4}
+              placeholder={isLoggedIn 
+                ? "What's on your mind? Share your thoughts with the community..." 
+                : "Express yourself freely... Share your feelings, thoughts, or experiences anonymously. Your voice matters."
+              }
+              className="post-textarea mb-2"
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
+              style={{
+                fontSize: '1rem',
+                lineHeight: '1.5',
+                border: '1px solid #e9ecef',
+                borderRadius: '8px',
+                padding: '12px'
+              }}
             />
+
+            {/* Preview selected image */}
             {selectedImage && (
-              <div className="image-preview">
+              <div className="image-preview mb-2">
                 <img src={selectedImage} alt="Selected" className="img-fluid" />
               </div>
             )}
+
+            {/* Add Image/Emoji */}
             <div className="add-post-container">
               <Button variant="light" className="add-post-btn">
                 Add to your post
-                <div className="add-post-icons">
+                <div className="add-post-icons ms-2">
                   <label htmlFor="image-upload">
                     <Image size={20} className="post-icon" />
                   </label>
@@ -233,21 +369,32 @@ const FreedomWall = () => {
                   />
                   <Smile
                     size={20}
-                    className="post-icon"
+                    className="post-icon ms-2"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                   />
                 </div>
               </Button>
             </div>
+
             {showEmojiPicker && <EmojiPicker onEmojiClick={handleEmojiClick} />}
           </div>
         </Modal.Body>
         <Modal.Footer style={{ backgroundColor: "#e6f4ea" }}>
-          <Button variant="success" onClick={handlePost}>Post</Button>
+          <Button 
+            variant="success" 
+            onClick={handlePost}
+            style={{
+              padding: '10px 20px',
+              fontWeight: '600',
+              borderRadius: '8px'
+            }}
+          >
+            {isLoggedIn ? "Post" : "Share Anonymously"}
+          </Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Floating Report Modal */}
+      {/* Report Modal */}
       <Modal show={showReportModal} onHide={() => setShowReportModal(false)} centered className="report-modal">
         <Modal.Header closeButton style={{ backgroundColor: "#e6f4ea" }}>
           <Modal.Title>Report Post</Modal.Title>
@@ -256,21 +403,37 @@ const FreedomWall = () => {
           <p>Please select a reason for reporting this post:</p>
           {reportReasons.map((reason) => (
             <Form.Check
-              key={reason}
+              key={reason.value}
               type="radio"
-              id={`report-${reason}`}
-              label={reason}
+              id={`report-${reason.value}`}
+              label={reason.label}
               name="reportReason"
-              value={reason}
-              checked={selectedReason === reason}
+              value={reason.value}
+              checked={selectedReason === reason.value}
               onChange={(e) => setSelectedReason(e.target.value)}
               className="mb-2"
             />
           ))}
+          {selectedReason === "other" && (
+            <Form.Control
+              as="textarea"
+              rows={3}
+              placeholder="Write your reason..."
+              className="mt-2"
+              value={selectedReasonCustom || ""}
+              onChange={(e) => setSelectedReasonCustom(e.target.value)}
+            />
+          )}
         </Modal.Body>
         <Modal.Footer style={{ backgroundColor: "#e6f4ea" }}>
           <Button variant="secondary" onClick={() => setShowReportModal(false)}>Cancel</Button>
-          <Button variant="success" onClick={submitReport} disabled={!selectedReason}>Submit</Button>
+          <Button
+            variant="success"
+            onClick={submitReport}
+            disabled={selectedReason === "" || (selectedReason === "other" && !selectedReasonCustom)}
+          >
+            Submit
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -298,67 +461,187 @@ const FreedomWall = () => {
         </div>
       )}
 
-      {/* Displaying Posts */}
+      {/* Posts List */}
       <div className="post-list">
         {posts.map((post) => (
-          <Card className="post-card position-relative" key={post.id}>
-            {/* Three-dot menu - only show for logged-in users */}
+          <Card className={`post-card position-relative mb-3 ${!isLoggedIn ? 'blurred-content' : ''}`} key={post.id}>
+            {/* Blur overlay for guest users */}
+            {!isLoggedIn && (
+              <div className="post-blur-overlay">
+                <div className="blur-message">
+                  <p>🔒 Join to view community posts</p>
+                  <small className="text-muted mb-3 d-block">
+                    Connect with others and see their shared experiences
+                  </small>
+                  <div className="mt-2">
+                    <Link to="/signin" className="btn btn-success btn-sm me-2">Sign In</Link>
+                    <Link to="/signup" className="btn btn-outline-success btn-sm">Sign Up</Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Three-dot menu - only show for logged in users */}
             {isLoggedIn && (
-              <Dropdown className="position-absolute" style={{ top: "10px", right: "10px" }}>
+              <Dropdown className="position-absolute" style={{ top: "15px", right: "15px", zIndex: 5 }}>
                 <Dropdown.Toggle
                   variant="light"
                   size="sm"
-                  className="p-0 border-0 d-flex align-items-center justify-content-center"
+                  className="p-1 border-0 d-flex align-items-center justify-content-center shadow-sm"
                   bsPrefix="btn"
                   id={`dropdown-${post.id}`}
+                  style={{ 
+                    width: '32px', 
+                    height: '32px', 
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)'
+                  }}
                 >
-                  <FaEllipsisV />
+                  <FaEllipsisV size={14} color="#666" />
                 </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => openReportModal(post.id)}>Report</Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleHide(post.id)}>Hide</Dropdown.Item>
+                <Dropdown.Menu align="end" className="shadow-sm">
+                  <Dropdown.Item onClick={() => openReportModal(post.id)} className="text-warning">
+                    ⚠️ Report Post
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleHide(post.id)} className="text-muted">
+                    👁️ Hide Post
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             )}
 
-            <Card.Body>
-              <div className="post-header">
-                <div className="avatar">A</div>
-                <div>
-                  <Card.Title className="post-author">{post.author}</Card.Title>
-                  <Card.Subtitle className="post-date">{post.date}</Card.Subtitle>
+            <Card.Body className="p-4">
+              {/* Post Header with improved styling */}
+              <div className="post-header d-flex align-items-start mb-3">
+                <div className="avatar me-3" style={{ 
+                  background: 'linear-gradient(135deg, #28a745, #20c997)',
+                  boxShadow: '0 2px 8px rgba(40, 167, 69, 0.3)'
+                }}>
+                  A
+                </div>
+                <div className="author-info flex-grow-1">
+                  <div className="d-flex justify-content-between align-items-start">
+                    <div>
+                      <Card.Title className="post-author mb-1" style={{ 
+                        fontSize: '1.1rem', 
+                        fontWeight: '600', 
+                        color: '#2c3e50' 
+                      }}>
+                        {post.author}
+                      </Card.Title>
+                      <Card.Subtitle className="post-date" style={{ 
+                        fontSize: '0.85rem', 
+                        color: '#6c757d',
+                        fontWeight: '400'
+                      }}>
+                        📅 {post.date}
+                      </Card.Subtitle>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <Card.Text className={`post-content ${!isLoggedIn ? 'blurred-content' : ''}`}>
+
+              {/* Post Content */}
+              <Card.Text className="post-content mb-3" style={{ 
+                fontSize: '1rem', 
+                lineHeight: '1.6', 
+                color: '#2c3e50',
+                marginLeft: '53px' // Align with author info
+              }}>
                 {censorText(post.content)}
               </Card.Text>
+
+              {/* Post Image */}
               {post.image && (
-                <div className={`post-image-container ${!isLoggedIn ? 'blurred-content' : ''}`}>
-                  <img src={post.image} alt="Post" className="img-fluid post-image" />
+                <div className="post-image-container mb-3" style={{ marginLeft: '53px' }}>
+                  <img 
+                    src={post.image} 
+                    alt="Post" 
+                    className="img-fluid post-image" 
+                    style={{ 
+                      borderRadius: '12px',
+                      maxHeight: '400px',
+                      objectFit: 'cover',
+                      width: '100%',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    }} 
+                  />
                 </div>
               )}
-              <div className="post-actions">
-                <div className="action-group">
-                  <div className="like-button" onClick={() => handleLike(post.id)}>
-                    <Heart color={post.liked ? "red" : "black"} fill={post.liked ? "red" : "none"} size={18} className="me-1" />
-                    <small>{post.likes}</small>
-                  </div>
-                  <div className="share-button" onClick={() => handleShare(post.id)}>
-                    <Send color={post.shared ? "blue" : "black"} fill={post.shared ? "blue" : "none"} size={18} className="me-1" />
-                    <small>{post.shares}</small>
-                  </div>
+
+              {/* Post Actions */}
+              <div className="post-actions d-flex gap-4 pt-2 border-top" style={{ 
+                marginLeft: '53px',
+                borderColor: '#e9ecef !important'
+              }}>
+                <div 
+                  className={`like-button d-flex align-items-center ${isLoggedIn ? 'cursor-pointer' : ''}`} 
+                  onClick={isLoggedIn ? () => handleLike(post.id) : undefined}
+                  style={{ 
+                    padding: '8px 12px',
+                    borderRadius: '20px',
+                    transition: 'all 0.2s ease',
+                    backgroundColor: post.liked ? 'rgba(220, 53, 69, 0.1)' : 'transparent',
+                    cursor: isLoggedIn ? 'pointer' : 'default',
+                    opacity: isLoggedIn ? 1 : 0.6
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isLoggedIn) e.target.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (isLoggedIn && !post.liked) e.target.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <Heart 
+                    color={post.liked ? "#dc3545" : "#6c757d"} 
+                    fill={post.liked ? "#dc3545" : "none"} 
+                    size={20} 
+                    className="me-2" 
+                  />
+                  <span style={{ 
+                    fontWeight: '500', 
+                    color: post.liked ? '#dc3545' : '#6c757d',
+                    fontSize: '0.9rem'
+                  }}>
+                    {post.likes} {post.likes === 1 ? 'Like' : 'Likes'}
+                  </span>
+                </div>
+
+                <div 
+                  className={`share-button d-flex align-items-center ${isLoggedIn ? 'cursor-pointer' : ''}`} 
+                  onClick={isLoggedIn ? () => handleShare(post.id) : undefined}
+                  style={{ 
+                    padding: '8px 12px',
+                    borderRadius: '20px',
+                    transition: 'all 0.2s ease',
+                    backgroundColor: post.shared ? 'rgba(0, 123, 255, 0.1)' : 'transparent',
+                    cursor: isLoggedIn ? 'pointer' : 'default',
+                    opacity: isLoggedIn ? 1 : 0.6
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isLoggedIn) e.target.style.backgroundColor = 'rgba(0, 123, 255, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (isLoggedIn && !post.shared) e.target.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <Send 
+                    color={post.shared ? "#007bff" : "#6c757d"} 
+                    fill={post.shared ? "#007bff" : "none"} 
+                    size={20} 
+                    className="me-2" 
+                  />
+                  <span style={{ 
+                    fontWeight: '500', 
+                    color: post.shared ? '#007bff' : '#6c757d',
+                    fontSize: '0.9rem'
+                  }}>
+                    {post.shares} {post.shares === 1 ? 'Share' : 'Shares'}
+                  </span>
                 </div>
               </div>
             </Card.Body>
-            
-            {/* Blur overlay for guests */}
-            {!isLoggedIn && (
-              <div className="post-blur-overlay">
-                <div className="blur-message">
-                  <p>Log in to view and interact with posts</p>
-                </div>
-              </div>
-            )}
           </Card>
         ))}
       </div>
@@ -367,4 +650,3 @@ const FreedomWall = () => {
 };
 
 export default FreedomWall;
-

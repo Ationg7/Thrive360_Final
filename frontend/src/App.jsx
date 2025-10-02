@@ -12,6 +12,7 @@ import Navbar from "./Components/Navbar";
 import Navbars from "./Components/Navbars";
 import AdminNavbar from "./Components/AdminNavbar";
 import Footer from "./Components/Footer";
+import FloatingPsychologists from "./Components/FloatingPsychologists";
 
 import Home from "./Pages/Home";
 import Profile from "./Pages/Profile";
@@ -21,6 +22,7 @@ import ForgotPassword from "./Pages/ForgotPassword";
 import FreedomWall from "./Pages/FreedomWall";
 import Meditation from "./Pages/Meditation";
 import Challenges from "./Pages/Challenges";
+import ChallengesCategories from "./Pages/ChallengesCategories";
 import Landing from "./Pages/Landing";
 import WellnessBlog from "./Pages/WellnessBlog";
 import GuideDetail from "./Pages/GuideDetail";
@@ -33,26 +35,52 @@ import AdminPosts from "./Pages/AdminPosts";
 import AdminChallenges from "./Pages/AdminChallenges";
 import AdminAnalytics from "./Pages/AdminAnalytics";
 import AdminReports from "./Pages/AdminReports";
+import AdminPsychiatrists from "./Pages/AdminPsychiatrists";
 import AdminMeditation from "./Pages/AdminMeditation";
 import AdminBlogs from "./Pages/AdminBlogs";
 import AdminSettings from "./Pages/AdminSettings";
-import { useAuth } from "./AuthContext";
+
+import { AuthProvider, useAuth } from "./AuthContext";
+import { ChallengesProvider } from "./Pages/Challenges";
 
 function Layout() {
   const location = useLocation();
   const { isLoggedIn } = useAuth();
 
   // Debug logging
-  console.log('Layout - Current path:', location.pathname, 'isLoggedIn:', isLoggedIn);
+  console.log("Layout - Current path:", location.pathname, "isLoggedIn:", isLoggedIn);
 
-  // Define public and excluded routes
   const publicRoutes = ["/", "/signin", "/signup", "/forgotpassword"];
-  const adminRoutes = ["/admin-login", "/admin-dashboard", "/admin/users", "/admin/posts", "/admin/challenges", "/admin/meditation", "/admin/blogs", "/admin/analytics", "/admin/reports", "/admin/settings"];
+  const adminRoutes = [
+    "/admin-login",
+    "/admin-dashboard",
+    "/admin/users",
+    "/admin/posts",
+    "/admin/challenges",
+    "/admin/meditation",
+    "/admin/blogs",
+    "/admin/analytics",
+    "/admin/reports",
+    "/admin/psychiatrists",
+    "/admin/settings",
+  ];
   const noNavbarRoutes = ["/dashboard"];
-  const noFooterRoutes = ["/dashboard", "/admin-login", "/admin-dashboard", "/admin/users", "/admin/posts", "/admin/challenges", "/admin/meditation", "/admin/blogs", "/admin/analytics", "/admin/reports", "/admin/settings"];
+  const noFooterRoutes = [
+    "/dashboard",
+    "/admin-login",
+    "/admin-dashboard",
+    "/admin/users",
+    "/admin/posts",
+    "/admin/challenges",
+    "/admin/meditation",
+    "/admin/blogs",
+    "/admin/analytics",
+    "/admin/reports",
+    "/admin/psychiatrists",
+    "/admin/settings",
+  ];
 
   const pathname = location.pathname.toLowerCase();
-
   const isPublicPage = publicRoutes.includes(pathname);
   const isAdminPage = adminRoutes.includes(pathname);
   const isNoNavbarPage = noNavbarRoutes.includes(pathname);
@@ -60,59 +88,81 @@ function Layout() {
 
   return (
     <>
-      {/* Render appropriate navbar based on route */}
+      {/* Navbars */}
       {isAdminPage && pathname !== "/admin-login" && <AdminNavbar />}
       {!isNoNavbarPage && !isAdminPage && (isPublicPage ? <Navbars /> : <Navbar />)}
 
-      {/* Render the page content */}
+      {/* Page content */}
       <Outlet />
 
-      {/* Render Footer if not excluded */}
+      {/* Footer */}
       {!isNoFooterPage && <Footer />}
+
+      {/* Floating circle always visible */}
+      <FloatingPsychologists />
     </>
   );
 }
 
-const router = createBrowserRouter(
-  [
-    {
-      path: "/",
-      element: <Layout />,
-      children: [
-        { path: "/", element: <Landing /> },
-        { path: "signin", element: <SignIn /> },
-        { path: "signup", element: <SignUp /> },
-        { path: "forgotpassword", element: <ForgotPassword /> },
-        { path: "home", element: <Home /> },
-        { path: "freedomwall", element: <FreedomWall /> },
-        { path: "meditation", element: <Meditation /> },
-        { path: "wellnessblog", element: <WellnessBlog /> },
-        { path: "challenges", element: <Challenges /> },
-        { path: "profile", element: <Profile /> },
-        { path: "dashboard", element: <Dashboard /> },
-        { path: "admin-login", element: <AdminLogin /> },
-        { path: "admin-dashboard", element: <AdminDashboard /> },
-        { path: "admin/users", element: <AdminUsers /> },
-        { path: "admin/posts", element: <AdminPosts /> },
-        { path: "admin/challenges", element: <AdminChallenges /> },
-        { path: "admin/meditation", element: <AdminMeditation /> },
-        { path: "admin/blogs", element: <AdminBlogs /> },
-        { path: "admin/analytics", element: <AdminAnalytics /> },
-        { path: "admin/reports", element: <AdminReports /> },
-        { path: "admin/settings", element: <AdminSettings /> },
-        { path: "guide-detail", element: <GuideDetail /> },
-        { path: "blogdetail", element: <BlogDetail /> },
-      ],
-    },
-  ],
+// ---------- Router ----------
+const router = createBrowserRouter([
   {
-    future: {
-      v7_startTransition: true,
-      v7_relativeSplatPath: true,
-    },
-  }
-);
+    path: "/",
+    element: (
+      <AuthProvider>
+        <Layout />
+      </AuthProvider>
+    ),
+    children: [
+      { path: "/", element: <Landing /> },
+      { path: "signin", element: <SignIn /> },
+      { path: "signup", element: <SignUp /> },
+      { path: "forgotpassword", element: <ForgotPassword /> },
+      { path: "home", element: <Home /> },
+      { path: "freedomwall", element: <FreedomWall /> },
+      { path: "meditation", element: <Meditation /> },
+      { path: "wellnessblog", element: <WellnessBlog /> },
+      { path: "profile", element: <Profile /> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "guide-detail", element: <GuideDetail /> },
+      { path: "blogdetail", element: <BlogDetail /> },
 
+      // ---------- Challenges Routes Wrapped in Provider ----------
+      {
+        path: "challenges",
+        element: (
+          <ChallengesProvider>
+            <Outlet />
+          </ChallengesProvider>
+        ),
+        children: [
+          { path: "", element: <Challenges /> },
+          { path: "categories", element: <ChallengesCategories /> },
+        ],
+      },
+
+      // ---------- Admin Routes ----------
+      { path: "admin-login", element: <AdminLogin /> },
+      { path: "admin-dashboard", element: <AdminDashboard /> },
+      { path: "admin/users", element: <AdminUsers /> },
+      { path: "admin/posts", element: <AdminPosts /> },
+      { path: "admin/challenges", element: <AdminChallenges /> },
+      { path: "admin/meditation", element: <AdminMeditation /> },
+      { path: "admin/blogs", element: <AdminBlogs /> },
+      { path: "admin/analytics", element: <AdminAnalytics /> },
+      { path: "admin/reports", element: <AdminReports /> },
+      { path: "admin/psychiatrists", element: <AdminPsychiatrists /> },
+      { path: "admin/settings", element: <AdminSettings /> },
+    ],
+  },
+], {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+  },
+});
+
+// ---------- App ----------
 function App() {
   return <RouterProvider router={router} />;
 }

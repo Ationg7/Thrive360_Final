@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content');
+            $table->string('category')->default('general');
+            $table->text('excerpt')->nullable();
+            $table->json('tags')->nullable();
             $table->string('author_name')->nullable();
             $table->string('author_email')->nullable();
             $table->string('image_url')->nullable();

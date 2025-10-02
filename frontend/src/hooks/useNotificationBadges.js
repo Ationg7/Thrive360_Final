@@ -27,7 +27,7 @@ export const useNotificationBadges = () => {
       }
 
       // Fetch data for each category to check for new items
-      const [usersRes, postsRes, challengesRes, meditationRes, blogsRes] = await Promise.allSettled([
+      const [usersRes, postsRes, challengesRes, meditationRes, blogsRes, reportsRes] = await Promise.allSettled([
         fetch(API_ENDPOINTS.USERS, {
           headers: { "Authorization": `Bearer ${adminToken}` }
         }),
@@ -41,6 +41,9 @@ export const useNotificationBadges = () => {
           headers: { "Authorization": `Bearer ${adminToken}` }
         }),
         fetch(API_ENDPOINTS.BLOGS, {
+          headers: { "Authorization": `Bearer ${adminToken}` }
+        }),
+        fetch(`${API_ENDPOINTS.DASHBOARD.replace('/dashboard', '/reports')}`, {
           headers: { "Authorization": `Bearer ${adminToken}` }
         })
       ]);
@@ -110,9 +113,13 @@ export const useNotificationBadges = () => {
         newBadges.blogs = newBlogs.length;
       }
 
-      // Analytics and reports don't have new item notifications
+      // Reports: count pending
+      if (reportsRes.status === 'fulfilled' && reportsRes.value.ok) {
+        const reportsData = await reportsRes.value.json();
+        newBadges.reports = (Array.isArray(reportsData) ? reportsData : []).filter(r => r.status === 'pending').length;
+      }
+      // Analytics doesn't have badge
       newBadges.analytics = 0;
-      newBadges.reports = 0;
 
       setBadges(newBadges);
       

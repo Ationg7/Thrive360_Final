@@ -31,6 +31,7 @@ export const ROUTES = {
   BLOGS_MANAGEMENT: '/admin/blogs',
   ANALYTICS: '/admin/analytics',
   REPORTS: '/admin/reports',
+  PSYCHIATRISTS: '/admin/psychiatrists',
   SETTINGS: '/admin/settings',
 };
 
@@ -79,4 +80,5 @@ export const NAVIGATION_BUTTONS = [
   { id: 'blogs', label: 'Health Blogs', color: '#9c27b0', route: ROUTES.BLOGS_MANAGEMENT, badge: 0 },
   { id: 'analytics', label: 'Analytics', color: COLORS.PURPLE, route: ROUTES.ANALYTICS, badge: 0 },
   { id: 'reports', label: 'Reports', color: COLORS.INFO, route: ROUTES.REPORTS, badge: 0 },
+  { id: 'psychiatrists', label: 'Psychiatrists', color: '#16a085', route: ROUTES.PSYCHIATRISTS, badge: 0 },
 ];

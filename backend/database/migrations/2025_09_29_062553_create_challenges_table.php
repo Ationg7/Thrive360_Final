@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
 {
-    Schema::create('challenges', function (Blueprint $table) {
+    if (!Schema::hasTable('challenges')) {
+        Schema::create('challenges', function (Blueprint $table) {
         $table->id();
         $table->string('title');
         $table->text('description');
@@ -22,7 +23,8 @@ return new class extends Migration
         $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
         $table->boolean('is_active')->default(true);
         $table->timestamps();
-    });
+        });
+    }
 }
 
 

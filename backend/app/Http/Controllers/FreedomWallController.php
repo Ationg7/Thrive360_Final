@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FreedomWallPost;
+use App\Models\PostReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -64,6 +65,41 @@ class FreedomWallController extends Controller
             'message' => 'Post shared successfully',
             'shares' => $post->fresh()->shares
         ]);
+    }
+
+    public function report(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'reason' => 'required|string|in:spam,harassment,hate_speech,nudity,self_harm,other',
+            'custom_reason' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $post = FreedomWallPost::findOrFail($id);
+
+        // Check if this IP has already reported this post
+        $existingReport = PostReport::where('post_id', $id)
+            ->where('reporter_ip', $request->ip())
+            ->first();
+
+        if ($existingReport) {
+            return response()->json(['message' => 'You have already reported this post'], 409);
+        }
+
+        $report = PostReport::create([
+            'post_id' => $id,
+            'reason' => $request->reason,
+            'custom_reason' => $request->custom_reason,
+            'reporter_ip' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => 'Post reported successfully. Thank you for helping keep our community safe.',
+            'report_id' => $report->id
+        ], 201);
     }
 
     public function destroy($id)

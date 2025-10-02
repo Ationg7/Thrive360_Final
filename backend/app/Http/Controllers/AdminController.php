@@ -5,8 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\FreedomWallPost;
 use App\Models\Challenge;
+use App\Models\Meditation;
+use App\Models\Blog;
+use App\Models\PostReport;
+use App\Models\Psychiatrist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -216,5 +221,308 @@ class AdminController extends Controller
         ];
 
         return response()->json($analytics);
+    }
+
+    // Meditation Management
+    public function getMeditations()
+    {
+        $meditations = Meditation::orderBy('created_at', 'desc')->get();
+        return response()->json($meditations);
+    }
+
+    public function storeMeditation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'duration' => 'nullable|string',
+            'category' => 'required|in:guided,breathing,mindfulness,sleep',
+            'image_file' => 'nullable|image|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $meditation = new Meditation($request->only([
+            'title', 'description', 'duration', 'category'
+        ]));
+
+        // Handle optional image file
+        if ($request->hasFile('image_file')) {
+            $meditation->image_url = $request->file('image_file')->store('meditations/images', 'public');
+        }
+
+        $meditation->save();
+
+        return response()->json($meditation, 201);
+    }
+
+    public function deleteMeditation($id)
+    {
+        $meditation = Meditation::findOrFail($id);
+
+        if ($meditation->image_url) {
+            Storage::disk('public')->delete($meditation->image_url);
+        }
+
+        $meditation->delete();
+
+        return response()->json(['message' => 'Meditation deleted successfully']);
+    }
+
+    // Blog Management
+    public function getBlogs()
+    {
+        $blogs = Blog::orderBy('created_at', 'desc')->get();
+        return response()->json($blogs);
+    }
+
+    public function storeBlog(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'category' => 'required|string',
+            'excerpt' => 'nullable|string',
+            'tags' => 'nullable|string',
+            'image_file' => 'nullable|image|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $blogData = $request->only(['title', 'content', 'category', 'excerpt']);
+        
+        // Handle tags - convert comma-separated string to array
+        if ($request->tags) {
+            $blogData['tags'] = array_map('trim', explode(',', $request->tags));
+        }
+
+        $blog = new Blog($blogData);
+
+        // Handle optional image
+        if ($request->hasFile('image_file')) {
+            $blog->image_url = $request->file('image_file')->store('blogs/images', 'public');
+        }
+
+        $blog->save();
+
+        return response()->json($blog, 201);
+    }
+
+    public function deleteBlog($id)
+    {
+        $blog = Blog::findOrFail($id);
+
+        if ($blog->image_url) {
+            Storage::disk('public')->delete($blog->image_url);
+        }
+
+        $blog->delete();
+
+        return response()->json(['message' => 'Blog deleted successfully']);
+    }
+
+    // Post Reports Management
+    public function getReports()
+    {
+        $reports = PostReport::with(['post', 'reviewer'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($reports);
+    }
+
+    public function updateReportStatus(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:pending,reviewed,resolved,dismissed',
+            'admin_notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $report = PostReport::findOrFail($id);
+        
+        $report->update([
+            'status' => $request->status,
+            'admin_notes' => $request->admin_notes,
+            'reviewed_at' => now(),
+            'reviewed_by' => auth()->id(),
+        ]);
+
+        return response()->json([
+            'message' => 'Report status updated successfully',
+            'report' => $report->load(['post', 'reviewer'])
+        ]);
+    }
+
+    public function deleteReportedPost(Request $request, $reportId)
+    {
+        $report = PostReport::findOrFail($reportId);
+        $post = $report->post;
+
+        // Delete the post and its associated image
+        if ($post->image_path) {
+            Storage::disk('public')->delete($post->image_path);
+        }
+
+        $post->delete();
+
+        // Update report status
+        $report->update([
+            'status' => 'resolved',
+            'admin_notes' => 'Post deleted by admin due to violation',
+            'reviewed_at' => now(),
+            'reviewed_by' => auth()->id(),
+        ]);
+
+        return response()->json(['message' => 'Reported post deleted successfully']);
+    }
+
+    public function getReportsStats()
+    {
+        $stats = [
+            'total_reports' => PostReport::count(),
+            'pending_reports' => PostReport::where('status', 'pending')->count(),
+            'reviewed_reports' => PostReport::where('status', 'reviewed')->count(),
+            'resolved_reports' => PostReport::where('status', 'resolved')->count(),
+            'dismissed_reports' => PostReport::where('status', 'dismissed')->count(),
+            'reports_by_reason' => PostReport::selectRaw('reason, COUNT(*) as count')
+                ->groupBy('reason')
+                ->get()
+                ->pluck('count', 'reason'),
+        ];
+
+        return response()->json($stats);
+    }
+
+    // Psychiatrist Management
+    public function getPsychiatrists()
+    {
+        $psychiatrists = Psychiatrist::orderBy('created_at', 'desc')->get();
+        return response()->json($psychiatrists);
+    }
+
+    // Public: Only active psychiatrists for user-facing pages
+    public function getActivePsychiatrists()
+    {
+        $psychiatrists = Psychiatrist::where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return response()->json($psychiatrists);
+    }
+
+    public function storePsychiatrist(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'specialization' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:1000',
+            'consultation_fee' => 'nullable|numeric|min:0',
+            'image_file' => 'nullable|image|max:2048',
+            'is_active' => 'boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $psychiatristData = $request->only([
+            'name', 'specialization', 'phone', 'email', 'address', 
+            'description', 'consultation_fee', 'is_active'
+        ]);
+
+        // Set default availability
+        $psychiatristData['availability'] = Psychiatrist::getDefaultAvailability();
+
+        $psychiatrist = new Psychiatrist($psychiatristData);
+
+        // Handle optional image
+        if ($request->hasFile('image_file')) {
+            $psychiatrist->image_url = $request->file('image_file')->store('psychiatrists/images', 'public');
+        }
+
+        $psychiatrist->save();
+
+        return response()->json($psychiatrist, 201);
+    }
+
+    public function updatePsychiatrist(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'specialization' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:1000',
+            'consultation_fee' => 'nullable|numeric|min:0',
+            'image_file' => 'nullable|image|max:2048',
+            'is_active' => 'boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $psychiatrist = Psychiatrist::findOrFail($id);
+
+        $psychiatristData = $request->only([
+            'name', 'specialization', 'phone', 'email', 'address', 
+            'description', 'consultation_fee', 'is_active'
+        ]);
+
+        // Handle optional image
+        if ($request->hasFile('image_file')) {
+            // Delete old image if exists
+            if ($psychiatrist->image_url) {
+                Storage::disk('public')->delete($psychiatrist->image_url);
+            }
+            $psychiatristData['image_url'] = $request->file('image_file')->store('psychiatrists/images', 'public');
+        }
+
+        $psychiatrist->update($psychiatristData);
+
+        return response()->json($psychiatrist);
+    }
+
+    public function deletePsychiatrist($id)
+    {
+        $psychiatrist = Psychiatrist::findOrFail($id);
+
+        if ($psychiatrist->image_url) {
+            Storage::disk('public')->delete($psychiatrist->image_url);
+        }
+
+        $psychiatrist->delete();
+
+        return response()->json(['message' => 'Psychiatrist deleted successfully']);
+    }
+
+    public function updatePsychiatristAvailability(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'availability' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $psychiatrist = Psychiatrist::findOrFail($id);
+        $psychiatrist->update(['availability' => $request->availability]);
+
+        return response()->json([
+            'message' => 'Availability updated successfully',
+            'psychiatrist' => $psychiatrist
+        ]);
     }
 }

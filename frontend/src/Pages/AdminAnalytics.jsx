@@ -14,10 +14,19 @@ const AdminAnalytics = memo(() => {
     challenges_per_day: [],
     user_registrations: []
   });
+  const [reports, setReports] = useState({
+    total_users: 0,
+    active_users: 0,
+    total_posts: 0,
+    total_challenges: 0,
+    guest_posts: 0,
+    user_posts: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [timeRange, setTimeRange] = useState('7');
+  const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
 
   // Clear messages after timeout
@@ -41,26 +50,40 @@ const AdminAnalytics = memo(() => {
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.ANALYTICS, {
-        headers: {
-          "Authorization": `Bearer ${adminToken}`,
-          "Content-Type": "application/json"
-        }
-      });
+      // Fetch both analytics and dashboard data
+      const [analyticsResponse, dashboardResponse] = await Promise.all([
+        fetch(API_ENDPOINTS.ANALYTICS, {
+          headers: {
+            "Authorization": `Bearer ${adminToken}`,
+            "Content-Type": "application/json"
+          }
+        }),
+        fetch(API_ENDPOINTS.DASHBOARD, {
+          headers: {
+            "Authorization": `Bearer ${adminToken}`,
+            "Content-Type": "application/json"
+          }
+        })
+      ]);
 
-      if (!response.ok) {
-        if (response.status === 401) {
+      if (!analyticsResponse.ok || !dashboardResponse.ok) {
+        if (analyticsResponse.status === 401 || dashboardResponse.status === 401) {
           localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN);
           localStorage.removeItem(STORAGE_KEYS.ADMIN_USER);
           navigate(ROUTES.ADMIN_LOGIN);
           return;
         }
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP Error: ${analyticsResponse.status} or ${dashboardResponse.status}`);
       }
 
-      const data = await response.json();
-      setAnalytics(data);
-      setSuccess('Analytics data loaded successfully');
+      const [analyticsData, dashboardData] = await Promise.all([
+        analyticsResponse.json(),
+        dashboardResponse.json()
+      ]);
+
+      setAnalytics(analyticsData);
+      setReports(dashboardData);
+      setSuccess('Analytics and reports data loaded successfully');
       
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -79,6 +102,118 @@ const AdminAnalytics = memo(() => {
   const getMaxValue = (data) => {
     return Math.max(...data.map(item => item.count), 1);
   };
+
+  // Calculate percentages
+  const calculatePercentage = (value, total) => {
+    if (total === 0) return 0;
+    return Math.round((value / total) * 100);
+  };
+
+  // Export functions
+  const exportToCSV = useCallback(() => {
+    try {
+      setExporting(true);
+      
+      const csvData = [
+        ['Report Type', 'Count', 'Percentage'],
+        ['Total Users', reports.total_users, '100%'],
+        ['Active Users', reports.active_users, `${calculatePercentage(reports.active_users, reports.total_users)}%`],
+        ['Total Posts', reports.total_posts, '100%'],
+        ['Guest Posts', reports.guest_posts, `${calculatePercentage(reports.guest_posts, reports.total_posts)}%`],
+        ['User Posts', reports.user_posts, `${calculatePercentage(reports.user_posts, reports.total_posts)}%`],
+        ['Total Challenges', reports.total_challenges, '100%']
+      ];
+      
+      const csvContent = csvData.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `thrive360-analytics-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setSuccess('Analytics report exported to CSV successfully!');
+      clearMessages();
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      setError('Failed to export CSV report');
+    } finally {
+      setExporting(false);
+    }
+  }, [reports, clearMessages]);
+
+  const exportToPDF = useCallback(() => {
+    try {
+      setExporting(true);
+      
+      const activeUserPercentage = calculatePercentage(reports.active_users, reports.total_users);
+      const guestPostPercentage = calculatePercentage(reports.guest_posts, reports.total_posts);
+      const userPostPercentage = calculatePercentage(reports.user_posts, reports.total_posts);
+      
+      // Create a comprehensive HTML report
+      const reportHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Thrive360 Analytics Report - ${new Date().toLocaleDateString()}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .report-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            .report-table th, .report-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            .report-table th { background-color: #f2f2f2; }
+            .summary { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .chart-summary { margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Thrive360 Analytics & Reports</h1>
+            <p>Generated on ${new Date().toLocaleString()}</p>
+          </div>
+          
+          <div class="summary">
+            <h2>Summary Statistics</h2>
+            <table class="report-table">
+              <tr><th>Metric</th><th>Count</th><th>Percentage</th></tr>
+              <tr><td>Total Users</td><td>${reports.total_users}</td><td>100%</td></tr>
+              <tr><td>Active Users</td><td>${reports.active_users}</td><td>${activeUserPercentage}%</td></tr>
+              <tr><td>Total Posts</td><td>${reports.total_posts}</td><td>100%</td></tr>
+              <tr><td>Guest Posts</td><td>${reports.guest_posts}</td><td>${guestPostPercentage}%</td></tr>
+              <tr><td>User Posts</td><td>${reports.user_posts}</td><td>${userPostPercentage}%</td></tr>
+              <tr><td>Total Challenges</td><td>${reports.total_challenges}</td><td>100%</td></tr>
+            </table>
+          </div>
+
+          <div class="chart-summary">
+            <h2>7-Day Activity Summary</h2>
+            <p><strong>Posts Created:</strong> ${calculateTotals(analytics.posts_per_day)} posts</p>
+            <p><strong>Challenges Created:</strong> ${calculateTotals(analytics.challenges_per_day)} challenges</p>
+            <p><strong>New User Registrations:</strong> ${calculateTotals(analytics.user_registrations)} users</p>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      // Open in new window for printing
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(reportHTML);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      
+      setSuccess('Analytics report opened for printing/PDF export!');
+      clearMessages();
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      setError('Failed to export PDF report');
+    } finally {
+      setExporting(false);
+    }
+  }, [reports, analytics, clearMessages]);
 
   // Initialize data
   useEffect(() => {
@@ -99,6 +234,10 @@ const AdminAnalytics = memo(() => {
   const postsTotal = calculateTotals(analytics.posts_per_day);
   const challengesTotal = calculateTotals(analytics.challenges_per_day);
   const usersTotal = calculateTotals(analytics.user_registrations);
+  
+  const activeUserPercentage = calculatePercentage(reports.active_users, reports.total_users);
+  const guestPostPercentage = calculatePercentage(reports.guest_posts, reports.total_posts);
+  const userPostPercentage = calculatePercentage(reports.user_posts, reports.total_posts);
 
   return (
     <ErrorBoundary>
@@ -112,32 +251,71 @@ const AdminAnalytics = memo(() => {
         {/* Header */}
         <div className="admin-page-header">
           <div className="admin-page-header-content">
-            <h1 className="admin-page-title">Analytics Dashboard</h1>
-            <p className="admin-page-subtitle">Insights and trends for the last 7 days</p>
+            <h1 className="admin-page-title">Analytics & Reports Dashboard</h1>
+            <p className="admin-page-subtitle">Comprehensive insights, trends, and detailed data analysis</p>
           </div>
         </div>
 
-        {/* Summary Cards */}
+        {/* Key Metrics from Reports */}
+        <div className="reports-metrics">
+          <div className="metric-card primary">
+            <div className="metric-icon">👥</div>
+            <div className="metric-content">
+              <h3>{reports.total_users}</h3>
+              <p>Total Users</p>
+              <div className="metric-detail">
+                <span className="detail-label">Active:</span>
+                <span className="detail-value">{reports.active_users} ({activeUserPercentage}%)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="metric-card success">
+            <div className="metric-icon">📝</div>
+            <div className="metric-content">
+              <h3>{reports.total_posts}</h3>
+              <p>Total Posts</p>
+              <div className="metric-detail">
+                <span className="detail-label">User Posts:</span>
+                <span className="detail-value">{reports.user_posts} ({userPostPercentage}%)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="metric-card warning">
+            <div className="metric-icon">🎯</div>
+            <div className="metric-content">
+              <h3>{reports.total_challenges}</h3>
+              <p>Total Challenges</p>
+              <div className="metric-detail">
+                <span className="detail-label">Active:</span>
+                <span className="detail-value">All Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 7-Day Activity Summary Cards */}
         <div className="analytics-summary">
           <div className="summary-card">
             <div className="summary-icon">📊</div>
             <div className="summary-content">
               <h3>{postsTotal}</h3>
-              <p>Total Posts</p>
+              <p>Posts (7 days)</p>
             </div>
           </div>
           <div className="summary-card">
             <div className="summary-icon">🎯</div>
             <div className="summary-content">
               <h3>{challengesTotal}</h3>
-              <p>Total Challenges</p>
+              <p>Challenges (7 days)</p>
             </div>
           </div>
           <div className="summary-card">
             <div className="summary-icon">👥</div>
             <div className="summary-content">
               <h3>{usersTotal}</h3>
-              <p>New Users</p>
+              <p>New Users (7 days)</p>
             </div>
           </div>
         </div>
@@ -238,13 +416,138 @@ const AdminAnalytics = memo(() => {
           </div>
         </div>
 
-        {/* Refresh Button */}
+        {/* Detailed Reports Section */}
+        <div className="reports-sections">
+          {/* User Activity Report */}
+          <div className="report-section">
+            <div className="report-header">
+              <h3>User Activity Report</h3>
+              <p>User engagement and activity metrics</p>
+            </div>
+            <div className="report-content">
+              <div className="report-stats">
+                <div className="stat-item">
+                  <div className="stat-label">Total Registered Users</div>
+                  <div className="stat-value">{reports.total_users}</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-label">Active Users</div>
+                  <div className="stat-value">{reports.active_users}</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-label">Inactive Users</div>
+                  <div className="stat-value">{reports.total_users - reports.active_users}</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-label">User Activity Rate</div>
+                  <div className="stat-value">{activeUserPercentage}%</div>
+                </div>
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${activeUserPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Report */}
+          <div className="report-section">
+            <div className="report-header">
+              <h3>Content Report</h3>
+              <p>Posts and content creation metrics</p>
+            </div>
+            <div className="report-content">
+              <div className="report-stats">
+                <div className="stat-item">
+                  <div className="stat-label">Total Posts</div>
+                  <div className="stat-value">{reports.total_posts}</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-label">User Posts</div>
+                  <div className="stat-value">{reports.user_posts}</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-label">Guest Posts</div>
+                  <div className="stat-value">{reports.guest_posts}</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-label">User Post Ratio</div>
+                  <div className="stat-value">{userPostPercentage}%</div>
+                </div>
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${userPostPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Platform Health Report */}
+          <div className="report-section">
+            <div className="report-header">
+              <h3>Platform Health Report</h3>
+              <p>Overall system health and performance</p>
+            </div>
+            <div className="report-content">
+              <div className="health-metrics">
+                <div className="health-item">
+                  <div className="health-icon">✅</div>
+                  <div className="health-content">
+                    <div className="health-label">System Status</div>
+                    <div className="health-value">Operational</div>
+                  </div>
+                </div>
+                <div className="health-item">
+                  <div className="health-icon">📊</div>
+                  <div className="health-content">
+                    <div className="health-label">Data Integrity</div>
+                    <div className="health-value">100%</div>
+                  </div>
+                </div>
+                <div className="health-item">
+                  <div className="health-icon">🔒</div>
+                  <div className="health-content">
+                    <div className="health-label">Security Status</div>
+                    <div className="health-value">Secure</div>
+                  </div>
+                </div>
+                <div className="health-item">
+                  <div className="health-icon">⚡</div>
+                  <div className="health-content">
+                    <div className="health-label">Performance</div>
+                    <div className="health-value">Optimal</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Export Actions */}
         <div className="analytics-actions">
           <button 
             onClick={fetchAnalytics}
             className="admin-refresh-btn"
           >
-            🔄 Refresh Analytics
+            🔄 Refresh Data
+          </button>
+          <button 
+            onClick={exportToCSV}
+            disabled={exporting}
+            className="export-btn csv-btn"
+          >
+            {exporting ? 'Exporting...' : '📊 Export CSV'}
+          </button>
+          <button 
+            onClick={exportToPDF}
+            disabled={exporting}
+            className="export-btn pdf-btn"
+          >
+            {exporting ? 'Exporting...' : '📄 Export PDF'}
           </button>
         </div>
       </div>

@@ -2,7 +2,8 @@
 return [
     'paths' => ['api/*'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['http://localhost:5173'], // Update this to match your frontend
+    'allowed_origins' => ['http://localhost:*'], // wildcard for any localhost port
+
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
