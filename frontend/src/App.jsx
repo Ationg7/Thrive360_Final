@@ -42,13 +42,9 @@ import AdminSettings from "./Pages/AdminSettings";
 
 import { AuthProvider, useAuth } from "./AuthContext";
 import { ChallengesProvider } from "./Pages/Challenges";
-
 function Layout() {
   const location = useLocation();
   const { isLoggedIn } = useAuth();
-
-  // Debug logging
-  console.log("Layout - Current path:", location.pathname, "isLoggedIn:", isLoggedIn);
 
   const publicRoutes = ["/", "/signin", "/signup", "/forgotpassword"];
   const adminRoutes = [
@@ -86,6 +82,15 @@ function Layout() {
   const isNoNavbarPage = noNavbarRoutes.includes(pathname);
   const isNoFooterPage = noFooterRoutes.includes(pathname);
 
+  const floatingAllowedRoutes = [
+    "/home",
+    "/profile",
+    "/meditation",
+    "/challenges",
+    "/wellnessblog",
+    "/freedomwall",
+  ];
+
   return (
     <>
       {/* Navbars */}
@@ -98,11 +103,15 @@ function Layout() {
       {/* Footer */}
       {!isNoFooterPage && <Footer />}
 
-      {/* Floating circle always visible */}
-      <FloatingPsychologists />
+      {/* FloatingPsychologists only for users on certain routes */}
+      {isLoggedIn &&
+        floatingAllowedRoutes.some((path) => pathname.startsWith(path)) && (
+          <FloatingPsychologists />
+        )}
     </>
   );
 }
+
 
 // ---------- Router ----------
 const router = createBrowserRouter([
