@@ -20,7 +20,6 @@ export const ChallengesProvider = ({ children }) => {
         setJoinedChallenges(
           data.map((c) => ({
             ...c,
-            progress: c.progress_percentage ?? 0,
             status: c.status ?? "Not Started",
             theme: c.theme ?? "blue",
           }))
@@ -35,21 +34,14 @@ export const ChallengesProvider = ({ children }) => {
   const joinChallenge = (challenge) => {
     setJoinedChallenges((prev) => {
       if (prev.some((c) => c.title === challenge.title)) return prev;
-      return [...prev, { ...challenge, status: "In Progress", progress: 0 }];
+      return [...prev, { ...challenge, status: "In Progress" }];
     });
   };
 
-  // ✅ Updated: 1-click completion
   const markDone = (title) => {
     setJoinedChallenges((prev) =>
       prev.map((c) =>
-        c.title === title
-          ? {
-              ...c,
-              progress: 100,       // instantly complete
-              status: "Completed", // mark as completed
-            }
-          : c
+        c.title === title ? { ...c, status: "Completed" } : c
       )
     );
   };
@@ -75,32 +67,58 @@ const ChallengesOverview = () => {
 
   const challengeTypes = ["Daily", "Weekly", "Monthly"];
 
-  const completedCount = joinedChallenges.filter((c) => c.status === "Completed").length;
-  const totalChallenges = joinedChallenges.length;
-  const completedPercent = totalChallenges
-    ? Math.round((completedCount / totalChallenges) * 100)
-    : 0;
-
   const getTheme = (type) => {
     if (type === "Daily") return "blue";
     if (type === "Weekly") return "purple";
     return "lightblue"; // Monthly
   };
 
+  // ✅ Status Tag Style
+  const getStatusStyle = (status) => {
+    const base = {
+      padding: "2px 8px",
+      borderRadius: "12px",
+      fontSize: "0.75rem",
+      fontWeight: "500",
+      textTransform: "capitalize",
+      border: "1.5px solid",
+      backgroundColor: "transparent",
+    };
+    if (status === "Completed") return { ...base, borderColor: "#28a745", color: "#28a745" };
+    if (status === "In Progress") return { ...base, borderColor: "#ffc107", color: "#ffc107" };
+    return { ...base, borderColor: "#007bff", color: "#007bff" };
+  };
+
+  // ✅ Calculate progress
+  const totalChallenges = joinedChallenges.length || 1;
+  const completedCount = joinedChallenges.filter((c) => c.status === "Completed").length;
+  const completedPercent = Math.round((completedCount / totalChallenges) * 100);
+
   return (
-    <Container className="challenges-container">
-      {/* Top Progress Bar */}
-      <div className="progress-container mb-3" style={{ marginTop: "50px" }}>
+    <Container className="challenges-container" style={{ marginTop: "50px" }}>
+      {/* ✅ Top Progress Bar */}
+      <div
+        className="progress-container"
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          padding: "20px 25px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+          marginTop: "50px",
+          marginBottom: "30px",
+        }}
+      >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "6px",
+            marginBottom: "10px",
           }}
         >
-          <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>Your Progress</span>
-          <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>{completedPercent}%</span>
+          <h5 style={{ margin: 0, fontWeight: 600, color: "#1e1e1e" }}>Your Progress</h5>
+          <span style={{ fontWeight: 500, color: "#28a745" }}>{completedPercent}%</span>
         </div>
 
         <div
@@ -128,17 +146,16 @@ const ChallengesOverview = () => {
               top: "50%",
               transform: "translate(-50%, -50%)",
               fontWeight: 500,
-              fontSize: "0.8rem",
-              color: "black",
-              pointerEvents: "none",
+              fontSize: "0.85rem",
+              color: completedPercent >= 50 ? "white" : "black",
             }}
           >
-            {completedCount} / {totalChallenges}
+            {completedCount} / {totalChallenges} Completed
           </span>
         </div>
       </div>
 
-      {/* Sections for Daily / Weekly / Monthly */}
+      {/* ✅ Challenge Sections */}
       {challengeTypes.map((type) => {
         const filteredChallenges = joinedChallenges.filter((c) => c.type === type);
         if (!filteredChallenges.length) return null;
@@ -189,18 +206,10 @@ const ChallengesOverview = () => {
                     onClick={handleCardClick}
                     style={{ minHeight: "350px" }}
                   >
-                    <div className="card-header d-flex justify-content-between">
+                    <div className="card-header d-flex justify-content-between align-items-center">
                       <span className="type-tag">{challenge.type}</span>
-                      <span
-                        className={`status-tag ${
-                          challenge.status.toLowerCase().replace(/\s/g, "") || "notstarted"
-                        }`}
-                      >
-                        {challenge.status === "In Progress"
-                          ? "In Progress "
-                          : challenge.status === "Completed"
-                          ? "Completed "
-                          : "Not Started "}
+                      <span style={getStatusStyle(challenge.status)}>
+                        {challenge.status}
                       </span>
                     </div>
 
@@ -218,11 +227,11 @@ const ChallengesOverview = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!isLoggedIn) setShowPopup(true);
-                          else markDone(challenge.title);
+                          else if (challenge.status !== "Completed") markDone(challenge.title);
                         }}
                         disabled={challenge.status === "Completed"}
                       >
-                        {challenge.status === "Completed" ? "Completed " : "Mark as Done "}
+                        {challenge.status === "Completed" ? "Completed" : "Mark as Done"}
                       </Button>
                     </Card.Body>
                   </Card>
