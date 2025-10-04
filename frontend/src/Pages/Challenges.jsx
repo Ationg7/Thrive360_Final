@@ -1,9 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { Container, Card, ProgressBar, Button, Row, Col, Alert } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Container, Card, Button } from "react-bootstrap";
 import { useAuth } from "../AuthContext";
 import { challengesAPI } from "../services/api";
 import FloatingPopup from "../Components/FloatingPopup";
+import { Link } from "react-router-dom";
+import "../App.css";
 
 // -------------------- Context --------------------
 const ChallengesContext = createContext();
@@ -12,7 +13,6 @@ export const ChallengesProvider = ({ children }) => {
   const [joinedChallenges, setJoinedChallenges] = useState([]);
   const { isLoggedIn } = useAuth();
 
-  // Load challenges from API
   useEffect(() => {
     const loadChallenges = async () => {
       try {
@@ -22,6 +22,7 @@ export const ChallengesProvider = ({ children }) => {
             ...c,
             progress: c.progress_percentage ?? 0,
             status: c.status ?? "Not Started",
+            theme: c.theme ?? "blue",
           }))
         );
       } catch (err) {
@@ -38,14 +39,15 @@ export const ChallengesProvider = ({ children }) => {
     });
   };
 
+  // ✅ Updated: 1-click completion
   const markDone = (title) => {
     setJoinedChallenges((prev) =>
       prev.map((c) =>
         c.title === title
           ? {
               ...c,
-              progress: Math.min(c.progress + 20, 100),
-              status: c.progress + 20 >= 100 ? "Completed" : "In Progress",
+              progress: 100,       // instantly complete
+              status: "Completed", // mark as completed
             }
           : c
       )
@@ -66,118 +68,170 @@ const ChallengesOverview = () => {
   const { isLoggedIn } = useAuth();
   const { joinedChallenges, markDone } = useChallenges();
   const [showPopup, setShowPopup] = useState(false);
-  const [error, setError] = useState(null);
 
   const handleCardClick = () => {
     if (!isLoggedIn) setShowPopup(true);
   };
 
+  const challengeTypes = ["Daily", "Weekly", "Monthly"];
+
+  const completedCount = joinedChallenges.filter((c) => c.status === "Completed").length;
+  const totalChallenges = joinedChallenges.length;
+  const completedPercent = totalChallenges
+    ? Math.round((completedCount / totalChallenges) * 100)
+    : 0;
+
+  const getTheme = (type) => {
+    if (type === "Daily") return "blue";
+    if (type === "Weekly") return "purple";
+    return "lightblue"; // Monthly
+  };
+
   return (
     <Container className="challenges-container">
-      <div className="header text-center mb-4">
-        <h2>Self-Care Challenges</h2>
-        <p className="description">
-          Track your progress and build healthy habits over time.
-        </p>
-        <Link to="/challenges/categories">
-          <Button variant="success">+ Join More Challenges</Button>
-        </Link>
+      {/* Top Progress Bar */}
+      <div className="progress-container mb-3" style={{ marginTop: "50px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "6px",
+          }}
+        >
+          <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>Your Progress</span>
+          <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>{completedPercent}%</span>
+        </div>
+
+        <div
+          style={{
+            position: "relative",
+            height: "16px",
+            backgroundColor: "#f1f3f5",
+            borderRadius: "8px",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: `${completedPercent}%`,
+              backgroundColor: "#28a745",
+              height: "100%",
+              borderRadius: "8px",
+              transition: "width 0.4s ease",
+            }}
+          />
+          <span
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              fontWeight: 500,
+              fontSize: "0.8rem",
+              color: "black",
+              pointerEvents: "none",
+            }}
+          >
+            {completedCount} / {totalChallenges}
+          </span>
+        </div>
       </div>
 
-      {error && (
-        <Alert variant="danger" dismissible onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+      {/* Sections for Daily / Weekly / Monthly */}
+      {challengeTypes.map((type) => {
+        const filteredChallenges = joinedChallenges.filter((c) => c.type === type);
+        if (!filteredChallenges.length) return null;
 
-      <div className="progress-container mb-4">
-        <h5>Your Progress</h5>
-        <ProgressBar
-          now={
-            joinedChallenges.length > 0
-              ? (joinedChallenges.filter((c) => c.status === "Completed").length /
-                  joinedChallenges.length) *
-                100
-              : 0
-          }
-          label={`${joinedChallenges.filter((c) => c.status === "Completed").length} / ${
-            joinedChallenges.length
-          } Completed`}
-          className="main-progress"
-        />
-      </div>
-
-      <Row className="challenges-grid">
-        {joinedChallenges.map((challenge, index) => (
-          <Col lg={4} md={6} sm={12} key={index} className="challenge-card mb-4">
-            <Card
-              className={`challenge ${challenge.theme}`}
-              onClick={handleCardClick}
-              style={{ minHeight: "300px" }}
+        return (
+          <div
+            key={type}
+            className="challenge-section mb-5"
+            style={{
+              width: "100%",
+              backgroundColor: "#f8f9fa",
+              borderRadius: "10px",
+              padding: "16px 12px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
             >
-              <div className="card-header d-flex justify-content-between">
-                <span className="type-tag">{challenge.type}</span>
-                <span className="status-tag">{challenge.status}</span>
-              </div>
-              <Card.Body className="d-flex flex-column">
-                <Card.Title>{challenge.title}</Card.Title>
-                <Card.Text>{challenge.description}</Card.Text>
+              <h4 style={{ textAlign: "left", margin: 0 }}>{type} Challenges</h4>
 
-                <div className="details mb-2 d-flex justify-content-between">
-                  <span>📅 {challenge.days_left ?? challenge.daysLeft}</span>
-                  <span>👥 {challenge.participants}</span>
-                </div>
-
-                <div className="d-flex justify-content-between align-items-center mb-1">
-                  <span>Progress</span>
-                  <span>{challenge.progress}%</span>
-                </div>
-                <ProgressBar now={challenge.progress} animated striped />
-
-                <Button
-                  className="challenge-button mt-2"
-                  onClick={() => {
-                    if (!isLoggedIn) {
-                      setShowPopup(true);
-                    } else {
-                      markDone(challenge.title);
-                    }
-                  }}
-                  disabled={challenge.status === "Completed"}
-                >
-                  {challenge.status === "Completed" ? "Completed 🎉" : "Mark as Done ✅"}
-                </Button>
-              </Card.Body>
-
-              {!isLoggedIn && (
-                <div
-                  className="challenge-card-overlay"
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: "rgba(255,255,255,0.7)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#333",
-                    fontSize: "1em",
-                    borderRadius: "8px",
-                    pointerEvents: "auto",
-                    zIndex: 2,
-                  }}
-                >
-                  <span>
-                    Take your time. When you’re ready, log in to explore this feature.
-                  </span>
-                </div>
+              {type === "Daily" && (
+                <Link to="/challenges/categories">
+                  <Button variant="success" size="sm">
+                    + Join More Challenges
+                  </Button>
+                </Link>
               )}
-            </Card>
-          </Col>
-        ))}
-      </Row>
+            </div>
+
+            <div
+              className="challenges-grid"
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "20px",
+                justifyContent: "flex-start",
+              }}
+            >
+              {filteredChallenges.map((challenge, index) => (
+                <div key={index} style={{ flex: "0 0 32%", minWidth: "280px", maxWidth: "32%" }}>
+                  <Card
+                    className={`challenge ${getTheme(type)}`}
+                    onClick={handleCardClick}
+                    style={{ minHeight: "350px" }}
+                  >
+                    <div className="card-header d-flex justify-content-between">
+                      <span className="type-tag">{challenge.type}</span>
+                      <span
+                        className={`status-tag ${
+                          challenge.status.toLowerCase().replace(/\s/g, "") || "notstarted"
+                        }`}
+                      >
+                        {challenge.status === "In Progress"
+                          ? "In Progress "
+                          : challenge.status === "Completed"
+                          ? "Completed "
+                          : "Not Started "}
+                      </span>
+                    </div>
+
+                    <Card.Body className="d-flex flex-column gap-2">
+                      <Card.Title>{challenge.title}</Card.Title>
+                      <Card.Text>{challenge.description}</Card.Text>
+
+                      <div className="details d-flex justify-content-between">
+                        <span>📅 {challenge.days_left ?? challenge.daysLeft ?? 34} days left</span>
+                        <span>👥 {challenge.participants ?? 140} participants</span>
+                      </div>
+
+                      <Button
+                        className="challenge-button mt-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isLoggedIn) setShowPopup(true);
+                          else markDone(challenge.title);
+                        }}
+                        disabled={challenge.status === "Completed"}
+                      >
+                        {challenge.status === "Completed" ? "Completed " : "Mark as Done "}
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
 
       <FloatingPopup
         show={showPopup}
@@ -188,7 +242,6 @@ const ChallengesOverview = () => {
   );
 };
 
-// -------------------- Export --------------------
 export default function Challenges() {
   return (
     <ChallengesProvider>

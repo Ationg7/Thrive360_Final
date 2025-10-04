@@ -2150,7 +2150,7 @@ button:hover {
 
 /* ✅ Category pill under image */
 /* Minimalistic category pill */
-.blog-card .blog-card-category {
+.blog-card .blog-card-category   {
   display: inline-block;       /* shrink to fit text */
   padding: 3px 10px;           /* horizontal and vertical padding */
   border: 1px solid #28a745;   /* green border */
@@ -2240,7 +2240,35 @@ button:hover {
 
 
 /* Meditation CSS */
-
+.meditation-card {
+  position: relative;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  margin-bottom: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.meditation-card-guest {
+  pointer-events: auto;
+}
+.meditation-card-guest:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.meditation-card-guest .meditation-card-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  font-size: 1em;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
 /* Container */
 .meditation-container {
   max-width: 1100px;
@@ -2366,6 +2394,34 @@ button:hover {
   margin-bottom: 5px;
   text-align: left;
 }
+/* ✅ Meditation Card Styles */
+.meditation-card .card-title {
+  color: #000; /* black title text */
+  font-weight: 600;
+  margin-top: 8px;
+}
+.guide-categories {
+  display: inline-block;       /* shrink to fit text */
+  padding: 3px 10px;           /* horizontal and vertical padding */
+  border: 1px solid #28a745;   /* green border */
+  color: #28a745;              /* green text */
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 20px;         /* pill shape */
+  white-space: nowrap;         /* prevent wrapping */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* subtle shadow */
+  background: transparent;     /* no fill */
+  width: auto;                 /* fit text */
+  align-self: flex-start;      /* align to left in flex container */
+  transition: all 0.2s;        /* hover effect */
+}
+/* Optional hover effect */
+.category-pill:hover,
+.guide-categories:hover {
+  background: #28a745;
+  color: white;
+}
+
 
 /* Responsive */
 @media (max-width: 992px) {
@@ -2498,19 +2554,7 @@ button:hover {
   top: 1px; /* move title slightly upward */
   margin-bottom: 10px; /* space below the title */
 }
-.guide-category-tag {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: #e8f5e9;       /* light green */
-  border-left: 4px solid #4caf50; /* green accent */
-  font-weight: bold;
-  font-size: 14px;
-  text-transform: uppercase;
-  color: black;
-  white-space: nowrap;
-  margin-bottom: 10px;
-}
+
 
 /* Description spacing */
 .top-text p {
@@ -2593,17 +2637,6 @@ button:hover {
   padding: 15px;
 }
 
-/* Category Tag */
-.guide-categorys {
-  display: inline-block;
-  background: #28a745;
-  color: white;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  margin-bottom: 8px;
-  text-align: center;
-}
 
 .step-text p {
   font-size: 14px;
@@ -2653,106 +2686,117 @@ button:hover {
 
 /* Challenges CSS */
 /* Challenges card hover */
-.challenge {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.challenge:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
+/* -------------------- General Container -------------------- */
 .challenges-container {
   max-width: 1100px;
   margin: auto;
   padding: 40px 20px;
+  background: white;
   text-align: center;
   display: flex;
   flex-direction: column;
-  background: white;
+  align-items: center;
 }
 
-/* Header */
+/* -------------------- Header -------------------- */
 .description {
   font-size: 16px;
   color: #555;
   margin-bottom: 30px;
 }
 
-/* Progress Section */
+/* -------------------- Progress Section -------------------- */
 .progress-container {
-  background: #f5f5f5;
+  background: #f8f9fa;
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 40px;
-  width: 900px;
+  width: 100%;
+  max-width: 900px;
 }
 
 .main-progress {
   height: 10px;
   border-radius: 5px;
-  background: #ddd;
 }
 
-.progress-container h5 {
-  margin-bottom: 10px;
-}
-
-.progress-container p {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #666;
-}
-
+/* -------------------- Grid Layout -------------------- */
+/* -------------------- Grid Layout -------------------- */
 .challenges-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px; /* Spacing between cards */
-  justify-content: space-between; /* Ensures equal spacing */
+  gap: 12px; /* small spacing between cards */
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
 }
 
 .challenge-card {
-  display: flex;
-  flex-direction: column;
-  
+  flex: 1 1 calc(33.33% - 12px); /* 3 per row accounting for gap */
+  min-width: 220px; /* ensures cards don't shrink too much */
+  box-sizing: border-box;
 }
 
+/* Responsive Layout */
+@media (max-width: 992px) {
+  .challenge-card {
+    flex: 1 1 calc(50% - 12px); /* 2 per row */
+  }
+}
+
+@media (max-width: 576px) {
+  .challenge-card {
+    flex: 1 1 100%; /* full width */
+  }
+}
+
+.animated-progress {
+  background: linear-gradient(
+    90deg,
+    #28a745 25%,
+    #20c933 50%,
+    #28a745 75%
+  );
+  background-size: 200% 100%;
+  animation: progressMove 2s linear infinite;
+}
+
+@keyframes progressMove {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* -------------------- Challenge Card -------------------- */
 .challenge {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 350px; /* Ensure uniform height */
-  padding-bottom: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
 }
 
-.challenge .card-body {
-  flex-grow: 1;
+.challenge:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* -------------------- Card Header -------------------- */
+.card-header {
+  border: none;
+  background: transparent;
+  padding: 10px 15px;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-}
-
-/* Aligns Progress Tag to Right */
-.status-tag {
-  margin-left: auto; /* Pushes it to the right */
-  background-color: yellow;
-  padding: 3px 8px;
-  font-weight: bold;
-  border-radius: 5px;
-}
-
-/* Aligns Button to Bottom */
-.challenge-button {
-  width: 100%;
-  margin-top: auto; /* Pushes button to bottom */
-}
-
-/* Makes All Cards Equal Height */
-@media (min-width: 992px) {
-  .challenge-card {
-    flex: 1 1 calc(33.333% - 20px); /* Ensures 3-column layout */
-  }
+  align-items: center;
 }
 
 .type-tag {
@@ -2760,34 +2804,54 @@ button:hover {
   padding: 5px 10px;
   border-radius: 20px;
   font-size: 12px;
+  font-weight: 500;
 }
 
 .status-tag {
   padding: 5px 10px;
   border-radius: 20px;
   font-size: 12px;
-}
-
-.status-tag.progress {
-  background: yellow;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 .status-tag.notstarted {
   background: #ddd;
+  color: #555;
 }
 
+.status-tag.inprogress {
+  background: #ffc107;
+  color: #000;
+}
+
+.status-tag.completed {
+  background: #28a745;
+  color: #fff;
+}
+
+/* -------------------- Card Body -------------------- */
+.challenge .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+  padding: 15px;
+  text-align: left;
+}
+
+/* -------------------- Details -------------------- */
 .details {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
-  margin-top: 10px;
+  font-size: 13px;
   color: #666;
+  margin-top: 10px;
 }
 
-/* Progress Bar */
+/* -------------------- Progress -------------------- */
 .progress-section {
   margin-top: 15px;
-  
 }
 
 .progress-bar {
@@ -2798,39 +2862,43 @@ button:hover {
 .progress-text {
   font-size: 12px;
   text-align: right;
-  display: block;
   margin-top: 5px;
+  display: block;
+  color: #666;
 }
 
-/* Buttons */
+/* -------------------- Buttons -------------------- */
 .challenge-button {
   width: 100%;
   margin-top: 15px;
   border-radius: 6px;
   padding: 10px;
   font-size: 14px;
+  background-color: #198754;
+  border: none;
+  color: white;
+  transition: background 0.2s ease;
 }
 
-/* Themed Card Colors */
-.blue {
-  border-top: 5px solid #007bff; /* classic blue */
+.challenge-button:hover {
+  background-color: #157347;
 }
+
+/* -------------------- Themed Card Colors -------------------- */
+.blue { border-top: 5px solid #007bff; }
 .purple { border-top: 5px solid #800080; }
+.lightblue { border-top: 5px solid #5a3fc0; }
 
-.lightblue {
-  border-top: 5px solid #5a3fc0; /* blue-purple blend */
-}
+/* -------------------- Responsive Layout -------------------- */
 @media (max-width: 992px) {
   .challenge-card {
-    flex: 0 0 48%;
-    max-width: 48%;
+    flex: 1 1 calc(50% - 20px);
   }
 }
 
 @media (max-width: 576px) {
   .challenge-card {
-    flex: 0 0 100%;
-    max-width: 100%;
+    flex: 1 1 100%;
   }
 }
 

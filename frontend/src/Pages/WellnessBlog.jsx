@@ -126,6 +126,8 @@ const WellnessBlog = () => {
     <Container className="wellness-container">
       {/* Categories + Search */}
       <div className="category-search-container">
+
+    
         <div className="categories">
           {[
             "All Topics",
