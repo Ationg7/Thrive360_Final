@@ -60,4 +60,37 @@ class User extends Authenticatable
     {
         return $this->role === 'user';
     }
+
+    // New relationships
+    public function savedPosts()
+    {
+        return $this->belongsToMany(FreedomWallPost::class, 'saved_posts', 'user_id', 'post_id')
+                    ->withTimestamps();
+    }
+
+    public function todos()
+    {
+        return $this->hasMany(Todo::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->notifications()->unread();
+    }
+
+    public function challengeProgress()
+    {
+        return $this->hasMany(UserChallengeProgress::class);
+    }
+
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_participants')
+                    ->withTimestamps();
+    }
 }

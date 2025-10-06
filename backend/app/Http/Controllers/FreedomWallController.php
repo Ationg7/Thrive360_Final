@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\FreedomWallPost;
-use App\Models\Reaction;
-use App\Models\FreedomWallReaction;
 use App\Models\PostReport;
+use App\Models\SavedPost;
+use App\Models\Notification;
+use App\Models\UserPostReaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -14,7 +15,32 @@ class FreedomWallController extends Controller
 {
     public function index()
     {
-        $posts = FreedomWallPost::orderBy('created_at', 'desc')->get();
+        $posts = FreedomWallPost::with(['savedByUsers', 'reactions'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Add user's saved status and reaction data
+        $posts = $posts->map(function ($post) {
+            $isSaved = auth()->check() ? $post->isSavedByUser(auth()->id()) : false;
+            $userReaction = auth()->check() ? $post->getUserReaction(auth()->id()) : null;
+            $reactionCounts = $post->getReactionCounts();
+            
+            return [
+                'id' => $post->id,
+                'content' => $post->content,
+                'author' => $post->author,
+                'image_path' => $post->image_path,
+                'created_at' => $post->created_at,
+                'updated_at' => $post->updated_at,
+                'likes' => $reactionCounts['like'],
+                'hearts' => $reactionCounts['heart'],
+                'sad' => $reactionCounts['sad'],
+                'saves' => $post->saves ?? 0,
+                'is_saved' => $isSaved,
+                'user_reaction' => $userReaction
+            ];
+        });
+
         return response()->json($posts);
     }
 
@@ -47,33 +73,154 @@ class FreedomWallController extends Controller
         return response()->json($post, 201);
     }
 
-   public function react(Request $request, FreedomWallPost $post)
-{
-    $request->validate([
-        'reaction_type' => 'required|string|in:like,heart',
-    ]);
+    public function react(Request $request, $postId)
+    {
+        $request->validate([
+            'reaction_type' => 'required|string|in:like,heart,sad',
+        ]);
 
-    $reaction = Reaction::firstOrCreate(['name' => $request->reaction_type]);
+        $post = FreedomWallPost::findOrFail($postId);
+        $reactionType = $request->reaction_type;
+        $userId = auth()->id();
 
-    $freedomwallReaction = FreedomWallReaction::updateOrCreate(
-        ['freedomwall_id' => $post->id, 'user_id' => auth()->id()],
-        ['reaction_id' => $reaction->id]
-    );
+        // Check if user already reacted to this post
+        $existingReaction = UserPostReaction::where('user_id', $userId)
+            ->where('post_id', $postId)
+            ->first();
 
-    $likes = $post->reactions()->whereHas('reaction', function ($q) {
-        $q->where('name', 'like');
-    })->count();
+        if ($existingReaction) {
+            // If user already reacted with the same type, remove the reaction
+            if ($existingReaction->reaction_type === $reactionType) {
+                $existingReaction->delete();
+                $userReaction = null;
+            } else {
+                // If user reacted with different type, update the reaction
+                $existingReaction->update(['reaction_type' => $reactionType]);
+                $userReaction = $reactionType;
+            }
+        } else {
+            // User hasn't reacted yet, create new reaction
+            UserPostReaction::create([
+                'user_id' => $userId,
+                'post_id' => $postId,
+                'reaction_type' => $reactionType
+            ]);
+            $userReaction = $reactionType;
+        }
 
-    $hearts = $post->reactions()->whereHas('reaction', function ($q) {
-        $q->where('name', 'heart');
-    })->count();
+        // Get updated reaction counts
+        $reactionCounts = $post->getReactionCounts();
 
-    return response()->json([
-        'likes' => $likes,
-        'hearts' => $hearts,
-        'user_reaction' => $request->reaction_type,
-    ]);
-}
+        return response()->json([
+            'likes' => $reactionCounts['like'],
+            'hearts' => $reactionCounts['heart'],
+            'sad' => $reactionCounts['sad'],
+            'user_reaction' => $userReaction,
+        ]);
+    }
+
+    public function save(Request $request, FreedomWallPost $post)
+    {
+        $userId = auth()->id();
+        
+        $savedPost = SavedPost::where('user_id', $userId)
+            ->where('post_id', $post->id)
+            ->first();
+
+        if ($savedPost) {
+            // Unsave the post
+            $savedPost->delete();
+            $isSaved = false;
+        } else {
+            // Save the post
+            SavedPost::create([
+                'user_id' => $userId,
+                'post_id' => $post->id
+            ]);
+            $isSaved = true;
+
+            // Create notification for post author if different from current user
+            if ($post->user_id && $post->user_id !== $userId) {
+                Notification::createNotification(
+                    $post->user_id,
+                    'save',
+                    'Post Saved',
+                    'Someone saved your post',
+                    ['post_id' => $post->id]
+                );
+            }
+        }
+
+        // Update the saves count on the post
+        $post->saves = $post->savedByUsers()->count();
+        $post->save();
+
+        return response()->json([
+            'is_saved' => $isSaved,
+            'saves_count' => $post->saves
+        ]);
+    }
+
+    public function getSavedPosts()
+    {
+        $userId = auth()->id();
+        $savedPosts = SavedPost::with(['post.reactions'])
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($savedPost) use ($userId) {
+                $post = $savedPost->post;
+                $reactionCounts = $post->getReactionCounts();
+                $userReaction = $post->getUserReaction($userId);
+                
+                return [
+                    'id' => $post->id,
+                    'content' => $post->content,
+                    'author' => $post->author,
+                    'image_path' => $post->image_path,
+                    'created_at' => $post->created_at,
+                    'likes' => $reactionCounts['like'],
+                    'hearts' => $reactionCounts['heart'],
+                    'sad' => $reactionCounts['sad'],
+                    'saves' => $post->saves ?? 0,
+                    'is_saved' => true,
+                    'user_reaction' => $userReaction,
+                    'saved_at' => $savedPost->created_at
+                ];
+            });
+
+        return response()->json($savedPosts);
+    }
+
+    public function getMyPosts()
+    {
+        $userId = auth()->id();
+        $posts = FreedomWallPost::with(['savedByUsers', 'reactions'])
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($post) use ($userId) {
+                $reactionCounts = $post->getReactionCounts();
+                $userReaction = $post->getUserReaction($userId);
+                
+                return [
+                    'id' => $post->id,
+                    'content' => $post->content,
+                    'author' => $post->author,
+                    'image_path' => $post->image_path,
+                    'created_at' => $post->created_at,
+                    'likes' => $reactionCounts['like'],
+                    'hearts' => $reactionCounts['heart'],
+                    'sad' => $reactionCounts['sad'],
+                    'saves' => $post->saves ?? 0,
+                    'is_saved' => $post->isSavedByUser($userId),
+                    'user_reaction' => $userReaction
+                ];
+            });
+
+        return response()->json($posts);
+    }
+
 
 
 

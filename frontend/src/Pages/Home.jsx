@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Container, Card, Row, Col } from "react-bootstrap";
+import { Container, Card, Row, Col, Button } from "react-bootstrap";
 import { FaCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext"; // ✅ check login state
-import FloatingPopup from "../Components/FloatingPopup"; // ✅ popup for guests
+import { useAuth } from "../AuthContext";
+import Events from "../Components/Events";
 
 const WellnessFeatures = () => {
   const { isLoggedIn } = useAuth();
@@ -43,9 +43,9 @@ const WellnessFeatures = () => {
 
   const handleFeatureClick = (link) => {
     if (isLoggedIn) {
-      navigate(link); // ✅ allow access
+      navigate(link);
     } else {
-      setShowPopup(true); // ✅ show popup for guests
+      setShowPopup(true);
     }
   };
 
@@ -104,8 +104,90 @@ const WellnessFeatures = () => {
         </Row>
       </div>
 
-      {/* ✅ Guest popup */}
-      <FloatingPopup show={showPopup} onClose={() => setShowPopup(false)} />
+      {/* Events Section */}
+      <div className="mt-5">
+        <Events />
+      </div>
+
+      {/* Guest popup (home notification style) */}
+      {showPopup && (
+        <div className="guest-popup-overlay">
+          <div className="guest-popup">
+            <div className="guest-popup-line"></div>
+            <p className="guest-popup-message">
+              You need to sign in to access this feature.
+            </p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowPopup(false)}
+                style={{ padding: "0.65rem 1.5rem", fontSize: "1.05rem" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => {
+                  setShowPopup(false);
+                  navigate("/signin");
+                }}
+                style={{ padding: "0.65rem 1.5rem", fontSize: "1.05rem" }}
+              >
+                Sign In
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Styles for popup */}
+      <style>{`
+        .guest-popup-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.4);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 2000;
+        }
+        .guest-popup {
+          background: white;
+          border-radius: 12px;
+          padding: 30px 40px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+          max-width: 400px;
+          width: 90%;
+          text-align: center;
+        }
+        .guest-popup-line {
+          height: 1px;
+          background: rgba(0,0,0,0.1);
+          margin-bottom: 20px;
+          color: green;
+        }
+        .guest-popup-message {
+          font-size: 1rem;
+          color: #333;
+          margin-bottom: 25px;
+          line-height: 1.5;
+        }
+          
+  /* ✅ Unified button size (same as others) */
+  .guest-popup .btn {
+    padding: 0.5rem 2rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    min-width: 120px;
+  }
+
+  .guest-popup .btn + .btn {
+    margin-left: 15px;
+  }
+      `}</style>
     </Container>
   );
 };

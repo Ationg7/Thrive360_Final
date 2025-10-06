@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -15,52 +15,20 @@ import { Heart, Send, Bell, CheckCircle } from "lucide-react";
 import { BsFilter, BsGear, BsEmojiSmile } from "react-icons/bs";
 import { ThreeDotsVertical, Image } from "react-bootstrap-icons";
 import EmojiPicker from "emoji-picker-react";
+import TodoList from "../Components/TodoList";
+import Notifications from "../Components/Notifications";
+import ChallengesHistory from "../Components/ChallengesHistory";
 
 const Profile = () => {
   // Posts States
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: "Anonymous",
-      date: "March 3, 2025",
-      content: "Been tired and drained lately.",
-      likes: 5,
-      hearts: 5,
-      shares: 7,
-      liked: false,
-      shared: false,
-      image: null,
-    },
-    {
-      id: 2,
-      author: "Anonymous",
-      date: "March 23, 2025",
-      content: "Feeling unwanted.",
-      likes: 5,
-      shares: 7,
-      liked: false,
-      shared: false,
-      image: null,
-    },
-  ]);
+  const [posts, setPosts] = useState([]);
   const [showPostModal, setShowPostModal] = useState(false);
   const [newPost, setNewPost] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [postFilter, setPostFilter] = useState("all");
 
-  // To-Do List States
-  const [tasks, setTasks] = useState([
-    "Do Meditation",
-    "Attend Yoga Session",
-    "Study for Exams",
-    "Complete Project",
-    "Relax and Unwind",
-    "Plan Weekend Activities",
-    "Check Emails",
-  ]);
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const [newTask, setNewTask] = useState("");
+  // To-Do List States (now handled by TodoList component)
 
   // Profile Photo Modal State
   const [showPhotoModal, setShowPhotoModal] = useState(false);
@@ -132,13 +100,50 @@ const Profile = () => {
     );
   };
 
-  // To-Do Handlers
-  const handleAddTask = () => {
-    if (!newTask.trim()) return;
-    setTasks([newTask, ...tasks]);
-    setNewTask("");
-    setShowTaskModal(false);
+  // Load posts based on filter
+  const loadPosts = async (filter) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      let response;
+      switch (filter) {
+        case 'saved':
+          response = await fetch('http://127.0.0.1:8000/api/freedom-wall/saved-posts', { headers });
+          if (response.ok) {
+            const data = await response.json();
+            setPosts(data);
+          }
+          break;
+        case 'my':
+          response = await fetch('http://127.0.0.1:8000/api/freedom-wall/my-posts', { headers });
+          if (response.ok) {
+            const data = await response.json();
+            setPosts(data);
+          }
+          break;
+        default:
+          response = await fetch('http://127.0.0.1:8000/api/freedom-wall/posts');
+          if (response.ok) {
+            const data = await response.json();
+            setPosts(data);
+          }
+          break;
+      }
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    }
   };
+
+  // Load posts when filter changes
+  useEffect(() => {
+    loadPosts(postFilter);
+  }, [postFilter]);
+
+  // To-Do Handlers (now handled by TodoList component)
 
   return (
     <Container fluid className="profile-container">
@@ -409,59 +414,11 @@ const Profile = () => {
 
         {/* Right Sidebar */}
         <Col md={3} className="right-sidebar">
-          <Card className="mb-3 right-sidebar-card">
-            <Card.Header>Notifications</Card.Header>
-            <hr className="my-0" />
-            <ListGroup variant="flush">
-              <ListGroup.Item className="notification-item">
-                <Bell className="me-2" /> Welcome to Thrive360!
-              </ListGroup.Item>
-              <ListGroup.Item className="notification-item">
-                <CheckCircle className="me-2 text-success" />
-                <strong>Yoga session</strong> request accepted.
-              </ListGroup.Item>
-            </ListGroup>
-          </Card>
+          <Notifications />
 
-          <Card className="right-sidebar-card position-relative">
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              To Do List
-              <Button className="plus-button" onClick={() => setShowTaskModal(true)}>+</Button>
-            </Card.Header>
-            <hr className="my-0" />
+        
 
-            <ListGroup variant="flush">
-              {tasks.map((task, idx) => (
-                <ListGroup.Item key={idx} className="d-flex justify-content-between align-items-center recent-activity-item">
-                  <span>{task}</span>
-                  <Form.Check type="checkbox" className="mb-0 green-checkbox" />
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-
-            {/* Modal for adding new task */}
-            <Modal show={showTaskModal} onHide={() => setShowTaskModal(false)} centered>
-              <Modal.Header closeButton>
-                <Modal.Title>Add New Task</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <FormControl
-                  type="text"
-                  placeholder="Enter task"
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
-                />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={() => setShowTaskModal(false)}>
-                  Cancel
-                </Button>
-                <Button variant="success" onClick={handleAddTask} disabled={!newTask.trim()}>
-                  Add Task
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </Card>
+          <TodoList />
         </Col>
       </Row>
     </Container>

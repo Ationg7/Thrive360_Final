@@ -6,7 +6,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FreedomWallController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\AdminChallengeController; // Make sure this is imported
+use App\Http\Controllers\AdminChallengeController;
+use App\Http\Controllers\TodoController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\EventController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -27,12 +30,19 @@ Route::post('/freedom-wall/posts/{id}/report', [FreedomWallController::class, 'r
 Route::get('/challenges', [ChallengeController::class, 'index']);
 Route::get('/challenges/{id}', [ChallengeController::class, 'show']);
 
+// Event routes (public)
+Route::get('/events', [EventController::class, 'index']);
+Route::get('/events/{id}', [EventController::class, 'show']);
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/freedom-wall/posts/{post}/react', [FreedomWallController::class, 'react']);
     
     // Freedom Wall protected routes
+    Route::post('/freedom-wall/posts/{postId}/react', [FreedomWallController::class, 'react']);
+    Route::post('/freedom-wall/posts/{post}/save', [FreedomWallController::class, 'save']);
+    Route::get('/freedom-wall/saved-posts', [FreedomWallController::class, 'getSavedPosts']);
+    Route::get('/freedom-wall/my-posts', [FreedomWallController::class, 'getMyPosts']);
     Route::delete('/freedom-wall/posts/{id}', [FreedomWallController::class, 'destroy']);
     
     // Challenge protected routes
@@ -42,6 +52,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/challenges/{id}/join', [ChallengeController::class, 'join']);
     Route::post('/challenges/{id}/progress', [ChallengeController::class, 'updateProgress']);
     Route::get('/challenges/{id}/progress', [ChallengeController::class, 'getUserProgress']);
+    Route::get('/challenges/history', [ChallengeController::class, 'getUserHistory']);
+    
+    // Todo routes
+    Route::apiResource('todos', TodoController::class);
+    Route::post('/todos/{id}/toggle', [TodoController::class, 'toggleComplete']);
+    
+    // Notification routes
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread', [NotificationController::class, 'unread']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    
+    // Event protected routes
+    Route::post('/events', [EventController::class, 'store']);
+    Route::put('/events/{id}', [EventController::class, 'update']);
+    Route::delete('/events/{id}', [EventController::class, 'destroy']);
+    Route::post('/events/{id}/join', [EventController::class, 'join']);
+    Route::post('/events/{id}/leave', [EventController::class, 'leave']);
+    Route::get('/events/suggestions', [EventController::class, 'getSuggestions']);
 
     // Admin routes (protected with admin middleware)
     Route::prefix('admin')->middleware('admin')->group(function () {
@@ -80,6 +110,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/challenges', [AdminChallengeController::class, 'index']);
         Route::post('/challenges', [AdminChallengeController::class, 'store']);
         Route::delete('/challenges/{id}', [AdminChallengeController::class, 'destroy']);
+
+        // --- Admin Event Routes ---
+        Route::get('/events', [EventController::class, 'index']);
+        Route::post('/events', [EventController::class, 'store']);
+        Route::put('/events/{id}', [EventController::class, 'update']);
+        Route::delete('/events/{id}', [EventController::class, 'destroy']);
     });
 });
 
@@ -109,3 +145,4 @@ Route::get('/test-db', function () {
         ], 500);
     }
 });
+

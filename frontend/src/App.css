@@ -80,7 +80,6 @@
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
   
 }
-
 /* Dropdown Menu */
 .navbar .navbar-nav .nav-item .dropdown-menu {
   border: none;
@@ -472,43 +471,18 @@
   background-color: #218838; /* Darker green */
 }
 
-/* Login Page Layout */
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  min-height: 100vh;
-  margin-top: 100px;
-}
-
-/* Login Form & Hero Image Wrapper */
-.Login-form {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  margin-top: 50px;
-  padding-left: 100px; /* Moves everything slightly to the right */
- 
-}
-/* Logo */
-
-
-
-/* Login Card */
-.login-card {
-  background: white;
-  padding: 10px 30px;
+.signup-card {
+  padding: 20px 25px; /* reduced from 30px to 25px */
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin-left: 50px; /* Adjust this value to move it more or less */
+  min-height: 480px; /* smaller than before */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* keep form at top */
 }
-.logo-container {
-  position: relative;
-  top: 40px; /* Increase this value to move the logo further down */
-}
+
+
+
 
 /* Centering the text inside the form */
 .title, .subtitle {
@@ -562,10 +536,22 @@
 .eye-icon {
   position: absolute;
   right: 10px;
+  top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  margin-top: 20px;
+  color: black; /* same color as your theme */
 }
+/* Hide browser’s default password reveal icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-inner-spin-button,
+input[type="password"]::-webkit-outer-spin-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none !important;
+    -webkit-appearance: none;
+}
+
+
 
 /* Hero Image  for sign in , sign up , and forgot pass*/
 .text-centers  {
@@ -575,6 +561,7 @@
   align-items: center;
   height: 100vh;
   width: 100%;
+  margin-bottom: 10px;
 }
 
 .circle-borders {
@@ -634,7 +621,7 @@
   font-size: 12px;
   color: #480606;
   text-decoration: none;
-  margin-bottom: 15px;
+  
 }
 
 .forgot-password:hover {
@@ -654,6 +641,7 @@
   border-radius: 15px;
   cursor: pointer;
   transition: 0.3s;
+  
   
 }
 
@@ -709,6 +697,7 @@
       width: 100%;
   }
 }
+
 
   /* Footer Design */
 .footer {
@@ -810,7 +799,7 @@ Sign UP Design */
 /* Logo */
 .logo-containers {
   display: flex;
- 
+  
   
 }
 
@@ -863,12 +852,6 @@ label {
   position: relative;
 }
 
-.eye-icon {
-  position: absolute;
-  right: 15px;
-  cursor: pointer;
-  
-}
 
 /* Register button */
 .register-btn {
@@ -948,12 +931,11 @@ label {
 .logo-container {
   display: flex;
   justify-content: center;
-  
-  margin-bottom: 50px;
+  margin-bottom: 10px;
 }
 
 .form-logo {
-  width: 80px;
+  width: 100px;
   
 }
 
@@ -1710,22 +1692,28 @@ button:hover {
 }
 
 /* Report modal radio buttons */
-.report-modal .form-check-input {
-  border: 2px solid #28a745;
+.report-modal  {
+  border: 100px solid #28a745;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  margin-left: 0;
+  margin-left: 10px;
   cursor: pointer;
-}
 
-.report-modal .form-check-input:checked {
-  background-color: #28a745;
-  border-color: #28a745;
 }
+.form-check-input {
+      border: 2px solid #28a745; /* green border */
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+    }
+.form-check-input:checked {
+      background-color: #28a745; /* green fill when selected */
+      border-color: #28a745;
+    }
 
 .report-modal .form-check-label {
-  margin-left: 15px;
+  margin-left: 2px; /* adjust spacing as needed */
   cursor: pointer;
   user-select: none;
   font-weight: 500;
@@ -2213,7 +2201,7 @@ button:hover {
   justify-content: center;
   align-items: center;
   font-weight: 600;
-  color: #1976d2;
+  color: green;
   text-align: center;
   padding: 10px;
 }
@@ -2901,6 +2889,8 @@ button:hover {
     flex: 1 1 100%;
   }
 }
+
+
 
 /* //Dashboard CSS// */
 /* Dashboard.css */
@@ -3716,23 +3706,4 @@ button:hover {
   background-color: white; /* match floating button color */
   color: black;              /* make text readable */
   border-bottom: none;       /* remove default border */
-}
-
-.plus-button {
-  background-color: green;
-  color: white;
-  font-weight: bold;
-  border: none;
-  width: 35px;
-  height: 35px;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%; /* optional: makes it circular */
-  cursor: pointer;
-}
-
-.plus-button:hover {
-  background-color: darkgreen;
 }

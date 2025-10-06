@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Card } from "react-bootstrap";
+import { Container, Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import FloatingPopup from "../Components/FloatingPopup";
 import "../App.css";
 
 const WellnessBlog = () => {
@@ -12,7 +11,6 @@ const WellnessBlog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [blogs, setBlogs] = useState([]);
   const navigate = useNavigate();
-
   const blogCardsRef = useRef([]);
 
   // --------- Hardcoded fallback blogs ---------
@@ -63,7 +61,6 @@ const WellnessBlog = () => {
         if (!res.ok) throw new Error("Failed to load blogs");
 
         const data = await res.json();
-
         if (!Array.isArray(data) || data.length === 0) {
           setBlogs(fallbackBlogs);
         } else {
@@ -77,7 +74,6 @@ const WellnessBlog = () => {
             fullText: b.content,
             author: b.author_name || "Admin",
           }));
-
           setBlogs([...fallbackBlogs, ...normalized]);
         }
       } catch (e) {
@@ -126,8 +122,6 @@ const WellnessBlog = () => {
     <Container className="wellness-container">
       {/* Categories + Search */}
       <div className="category-search-container">
-
-    
         <div className="categories">
           {[
             "All Topics",
@@ -177,13 +171,97 @@ const WellnessBlog = () => {
           </Card>
         ))}
       </div>
+{showPopup && (
+  <div className="meditation-notif-overlay">
+    <div className="meditation-notif-popup">
 
-      {/* Floating Popup */}
-      <FloatingPopup
-        show={showPopup}
-        onHide={() => setShowPopup(false)}
-        message="Take your time. When you're ready, log in to explore this feature."
-      />
+      {/* Line at the top */}
+      <div className="notif-line"></div>
+
+      <p className="notif-message">
+        Take your time. When you're ready, log in to explore this feature.
+      </p>
+
+      <div className="notif-btn-container">
+        <Button
+          variant="success"
+          onClick={() => setShowPopup(false)}
+        >
+          OK
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
+      <style>{`
+        .blog-card-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #2e7d32;
+          font-weight: 600;
+          font-size: 1rem;
+          text-align: center;
+         background: rgba(255,255,255,0.25);
+          border-radius: 8px;
+          pointer-events: none;
+        }
+
+        /* Meditation-style notification */
+        .meditation-notif-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          backdrop-filter: blur(3px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 2000;
+        }
+
+        .meditation-notif-popup {
+          background: #fff;
+          border-radius: 12px;
+          padding: 20px 25px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+          max-width: 350px;
+          width: 90%;
+          text-align: center;
+        }
+
+        .notif-message {
+          font-size: 1rem;
+          color: #333;
+          margin-bottom: 15px;
+          line-height: 1.4;
+        }
+         .notif-line {
+  height: 1px;
+  background-color: rgba(0,0,0,0.1); /* light gray line */
+  margin: 15px 0; /* space above and below */
+}
+
+        .notif-btn-container {
+          display: flex;
+          justify-content: center;
+        }
+
+        .notif-btn-container .btn {
+          padding: 0.5rem 3rem;
+          font-size: 1rem;
+        }
+      `}</style>
     </Container>
   );
 };

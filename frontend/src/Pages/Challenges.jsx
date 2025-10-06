@@ -3,7 +3,7 @@ import { Container, Card, Button } from "react-bootstrap";
 import { useAuth } from "../AuthContext";
 import { challengesAPI } from "../services/api";
 import FloatingPopup from "../Components/FloatingPopup";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 // -------------------- Context --------------------
@@ -40,9 +40,7 @@ export const ChallengesProvider = ({ children }) => {
 
   const markDone = (title) => {
     setJoinedChallenges((prev) =>
-      prev.map((c) =>
-        c.title === title ? { ...c, status: "Completed" } : c
-      )
+      prev.map((c) => (c.title === title ? { ...c, status: "Completed" } : c))
     );
   };
 
@@ -60,9 +58,14 @@ const ChallengesOverview = () => {
   const { isLoggedIn } = useAuth();
   const { joinedChallenges, markDone } = useChallenges();
   const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [popupAction, setPopupAction] = useState(null); // "join" or "markDone"
+  const navigate = useNavigate();
 
-  const handleCardClick = () => {
-    if (!isLoggedIn) setShowPopup(true);
+  const handleGuestAction = (action) => {
+    setPopupMessage("You need to sign in to access this feature.");
+    setPopupAction(action);
+    setShowPopup(true);
   };
 
   const challengeTypes = ["Daily", "Weekly", "Monthly"];
@@ -73,7 +76,6 @@ const ChallengesOverview = () => {
     return "lightblue"; // Monthly
   };
 
-  // ✅ Status Tag Style
   const getStatusStyle = (status) => {
     const base = {
       padding: "2px 8px",
@@ -89,14 +91,13 @@ const ChallengesOverview = () => {
     return { ...base, borderColor: "#007bff", color: "#007bff" };
   };
 
-  // ✅ Calculate progress
   const totalChallenges = joinedChallenges.length || 1;
   const completedCount = joinedChallenges.filter((c) => c.status === "Completed").length;
   const completedPercent = Math.round((completedCount / totalChallenges) * 100);
 
   return (
     <Container className="challenges-container" style={{ marginTop: "50px" }}>
-      {/* ✅ Top Progress Bar */}
+      {/* Progress Bar */}
       <div
         className="progress-container"
         style={{
@@ -109,36 +110,12 @@ const ChallengesOverview = () => {
           marginBottom: "30px",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "10px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
           <h5 style={{ margin: 0, fontWeight: 600, color: "#1e1e1e" }}>Your Progress</h5>
           <span style={{ fontWeight: 500, color: "#28a745" }}>{completedPercent}%</span>
         </div>
-
-        <div
-          style={{
-            position: "relative",
-            height: "16px",
-            backgroundColor: "#f1f3f5",
-            borderRadius: "8px",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: `${completedPercent}%`,
-              backgroundColor: "#28a745",
-              height: "100%",
-              borderRadius: "8px",
-              transition: "width 0.4s ease",
-            }}
-          />
+        <div style={{ position: "relative", height: "16px", backgroundColor: "#f1f3f5", borderRadius: "8px", overflow: "hidden" }}>
+          <div style={{ width: `${completedPercent}%`, backgroundColor: "#28a745", height: "100%", borderRadius: "8px", transition: "width 0.4s ease" }} />
           <span
             style={{
               position: "absolute",
@@ -155,7 +132,7 @@ const ChallengesOverview = () => {
         </div>
       </div>
 
-      {/* ✅ Challenge Sections */}
+      {/* Challenge Sections */}
       {challengeTypes.map((type) => {
         const filteredChallenges = joinedChallenges.filter((c) => c.type === type);
         if (!filteredChallenges.length) return null;
@@ -164,53 +141,36 @@ const ChallengesOverview = () => {
           <div
             key={type}
             className="challenge-section mb-5"
-            style={{
-              width: "100%",
-              backgroundColor: "#f8f9fa",
-              borderRadius: "10px",
-              padding: "16px 12px",
-            }}
+            style={{ width: "100%", backgroundColor: "#f8f9fa", borderRadius: "10px", padding: "16px 12px" }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "12px",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
               <h4 style={{ textAlign: "left", margin: 0 }}>{type} Challenges</h4>
 
               {type === "Daily" && (
-                <Link to="/challenges/categories">
-                  <Button variant="success" size="sm">
-                    + Join More Challenges
-                  </Button>
-                </Link>
+                <Button
+                  variant="success"
+                  size="sm"
+                  onClick={() => {
+                    if (!isLoggedIn) handleGuestAction("join");
+                    else navigate("/challenges/categories");
+                  }}
+                >
+                  + Join More Challenges
+                </Button>
               )}
             </div>
 
-            <div
-              className="challenges-grid"
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "20px",
-                justifyContent: "flex-start",
-              }}
-            >
+            <div className="challenges-grid" style={{ display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "flex-start" }}>
               {filteredChallenges.map((challenge, index) => (
                 <div key={index} style={{ flex: "0 0 32%", minWidth: "280px", maxWidth: "32%" }}>
                   <Card
-                    className={`challenge ${getTheme(type)}`}
-                    onClick={handleCardClick}
-                    style={{ minHeight: "350px" }}
+                    className={`challenge ${getTheme(type)} ${!isLoggedIn ? "challenge-guest" : ""}`}
+                    onClick={() => { if (!isLoggedIn) handleGuestAction("markDone"); }}
+                    style={{ minHeight: "350px", position: "relative", overflow: "hidden" }}
                   >
                     <div className="card-header d-flex justify-content-between align-items-center">
                       <span className="type-tag">{challenge.type}</span>
-                      <span style={getStatusStyle(challenge.status)}>
-                        {challenge.status}
-                      </span>
+                      <span style={getStatusStyle(challenge.status)}>{challenge.status}</span>
                     </div>
 
                     <Card.Body className="d-flex flex-column gap-2">
@@ -226,7 +186,7 @@ const ChallengesOverview = () => {
                         className="challenge-button mt-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (!isLoggedIn) setShowPopup(true);
+                          if (!isLoggedIn) handleGuestAction("markDone");
                           else if (challenge.status !== "Completed") markDone(challenge.title);
                         }}
                         disabled={challenge.status === "Completed"}
@@ -234,6 +194,13 @@ const ChallengesOverview = () => {
                         {challenge.status === "Completed" ? "Completed" : "Mark as Done"}
                       </Button>
                     </Card.Body>
+
+                    {/* Guest Overlay */}
+                    {!isLoggedIn && (
+                      <div className="challenge-card-overlay">
+                        Login to view this challenge
+                      </div>
+                    )}
                   </Card>
                 </div>
               ))}
@@ -242,11 +209,109 @@ const ChallengesOverview = () => {
         );
       })}
 
-      <FloatingPopup
-        show={showPopup}
-        onHide={() => setShowPopup(false)}
-        message="Take your time. When you’re ready, log in to explore this feature."
-      />
+      {/* Floating Popup for Guests */}
+      {showPopup && (
+        <div className="guest-popup-overlay">
+          <div className="guest-popup">
+            <div className="guest-popup-line"></div>
+            <p className="guest-popup-message">{popupMessage}</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+              <Button variant="secondary" onClick={() => setShowPopup(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => {
+                  setShowPopup(false);
+                  navigate("/signin");
+                }}
+              >
+                Sign In
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Guest Mode Styles */}
+      <style>{`
+        .challenge-guest .card-body,
+        .challenge-guest .card-header {
+          filter: blur(4px);
+          pointer-events: none;
+        }
+        .challenge-card-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #2e7d32; /* green */
+          font-weight: 600;
+          font-size: 1rem;
+          text-align: center;
+          background: rgba(255,255,255,0.25);
+          border-radius: 8px;
+          pointer-events: none;
+        }
+       /* Guest popup overlay (Meditation style) */
+.guest-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(3px); /* subtle blur like Meditation */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.guest-popup {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15); /* softer shadow like Meditation */
+  max-width: 350px;
+  width: 90%;
+  text-align: center;
+  animation: slideUp 0.3s ease forwards;
+}
+
+.guest-popup-line {
+  height: 1px;
+  background-color: rgba(0,0,0,0.1); /* subtle line like Meditation */
+  margin-bottom: 15px;
+}
+
+.guest-popup-message {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.guest-popup .btn {
+  padding: 0.5rem 2rem;
+  font-size: 1rem;
+  border-radius: 8px;
+}
+
+.guest-popup .btn + .btn {
+  margin-left: 15px; /* spacing between Cancel and Sign In */
+}
+
+/* Slide-up animation */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+      `}</style>
     </Container>
   );
 };

@@ -179,6 +179,31 @@ class ChallengeController extends Controller
         return response()->json($progress);
     }
 
+    public function getUserHistory()
+    {
+        $userId = auth()->id();
+        
+        $challengeHistory = UserChallengeProgress::with(['challenge'])
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($progress) {
+                return [
+                    'id' => $progress->id,
+                    'challenge_id' => $progress->challenge_id,
+                    'challenge_title' => $progress->challenge->title,
+                    'challenge_type' => $progress->challenge->type,
+                    'status' => $progress->status,
+                    'progress_percentage' => $progress->progress_percentage,
+                    'joined_at' => $progress->created_at,
+                    'last_updated' => $progress->updated_at,
+                    'is_completed' => $progress->status === 'Completed'
+                ];
+            });
+
+        return response()->json($challengeHistory);
+    }
+
     public function destroy($id)
     {
         $challenge = Challenge::findOrFail($id);
