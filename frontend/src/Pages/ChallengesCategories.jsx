@@ -24,7 +24,7 @@ const ChallengesCategories = () => {
         let challenges = await challengesAPI.getChallenges();
 
         // Add an extra Monthly challenge for consistency
-        const monthlyChallenges = challenges.filter(c => c.type === "Monthly");
+        const monthlyChallenges = challenges.filter((c) => c.type === "Monthly");
         if (monthlyChallenges.length === 1) {
           challenges.push({
             id: "monthly-2",
@@ -67,7 +67,9 @@ const ChallengesCategories = () => {
       {/* Header */}
       <div className="header text-center mb-4">
         <h2>All Challenges</h2>
-        <p className="description">Choose challenges to join and improve your habits!</p>
+        <p className="description">
+          Choose challenges to join and improve your habits!
+        </p>
       </div>
 
       {/* Tabs for Daily / Weekly / Monthly */}
@@ -83,13 +85,15 @@ const ChallengesCategories = () => {
         <Tab.Content>
           {challengeTypes.map((type) => (
             <Tab.Pane eventKey={type} key={type}>
+              {/* ✅ Fixed Grid */}
               <div
-                className="challenges-grid"
+                className={`challenges-grid ${type.toLowerCase()}`}
                 style={{
                   display: "flex",
                   flexWrap: "wrap",
                   gap: "20px",
                   justifyContent: "flex-start",
+                  width: "100%",
                 }}
               >
                 {allChallenges
@@ -102,7 +106,7 @@ const ChallengesCategories = () => {
                       <div
                         key={challenge.id ?? index}
                         style={{
-                          flex: "0 0 32%",
+                          flex: "1 1 32%",
                           minWidth: "280px",
                           maxWidth: "32%",
                         }}
@@ -114,6 +118,7 @@ const ChallengesCategories = () => {
                             borderRadius: "10px",
                             backgroundColor: "#f8f9fa",
                             overflow: "hidden",
+                            height: "100%",
                           }}
                         >
                           {/* Header with status tag */}
@@ -156,9 +161,15 @@ const ChallengesCategories = () => {
 
                             <div className="details d-flex justify-content-between">
                               <span>
-                                📅 {challenge.daysLeft ?? challenge.days_left ?? 34} days left
+                                📅{" "}
+                                {challenge.daysLeft ??
+                                  challenge.days_left ??
+                                  34}{" "}
+                                days left
                               </span>
-                              <span>👥 {challenge.participants ?? 140} participants</span>
+                              <span>
+                                👥 {challenge.participants ?? 140} participants
+                              </span>
                             </div>
 
                             <Button
@@ -173,6 +184,27 @@ const ChallengesCategories = () => {
                       </div>
                     );
                   })}
+
+                {/* ✅ Invisible placeholders for equal row width */}
+                {(() => {
+                  const count = allChallenges.filter(
+                    (c) => c.type === type
+                  ).length;
+                  const placeholders = 3 - count; // assume 3 cards per row layout
+                  return placeholders > 0
+                    ? Array.from({ length: placeholders }).map((_, i) => (
+                        <div
+                          key={`placeholder-${i}`}
+                          style={{
+                            flex: "1 1 32%",
+                            minWidth: "280px",
+                            maxWidth: "32%",
+                            visibility: "hidden",
+                          }}
+                        />
+                      ))
+                    : null;
+                })()}
               </div>
 
               {/* No challenges fallback */}

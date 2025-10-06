@@ -3717,3 +3717,22 @@ button:hover {
   color: black;              /* make text readable */
   border-bottom: none;       /* remove default border */
 }
+
+.plus-button {
+  background-color: green;
+  color: white;
+  font-weight: bold;
+  border: none;
+  width: 35px;
+  height: 35px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; /* optional: makes it circular */
+  cursor: pointer;
+}
+
+.plus-button:hover {
+  background-color: darkgreen;
+}

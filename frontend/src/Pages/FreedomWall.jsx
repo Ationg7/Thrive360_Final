@@ -106,35 +106,54 @@ const FreedomWall = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleLike = (id) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === id
+ const handleReaction = async (postId, reactionType) => {
+  if (!isLoggedIn) return;
+
+  try {
+    const res = await fetch(
+      `http://127.0.0.1:8000/api/freedom-wall/posts/${postId}/react`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.token}`, // must have a valid token
+        },
+        body: JSON.stringify({ reaction_type: reactionType }),
+      }
+    );
+
+    if (!res.ok) {
+  const errorData = await res.json().catch(() => ({}));
+  console.error("Reaction API error:", JSON.stringify(errorData, null, 2)); // 👈 pretty print
+  alert(errorData.message || "Failed to react");
+  return;
+}
+
+
+    const data = await res.json();
+
+    // Update local post state
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
           ? {
               ...post,
-              likes: post.liked ? post.likes - 1 : post.likes + 1,
-              liked: !post.liked,
+              likes: data.likes ?? post.likes,
+              hearts: data.hearts ?? post.hearts,
+              liked: data.user_reaction === "like",
+              hearted: data.user_reaction === "heart",
             }
           : post
       )
     );
-  };
+  } catch (err) {
+    console.error("Reaction error:", err);
+    alert("Could not reach the server. Make sure your backend is running.");
+  }
+};
 
-  const handleHeart = (id) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === id
-          ? {
-              ...post,
-              hearts: post.hearted ? post.hearts - 1 : post.hearts + 1,
-              hearted: !post.hearted,
-            }
-          : post
-      )
-    );
-  };
 
-  // Save with confirmation
+
   const handleSave = (id) => {
     if (!isLoggedIn) return;
     if (!window.confirm("Do you want to save this post?")) return;
@@ -157,8 +176,7 @@ const FreedomWall = () => {
     try {
       const formData = new FormData();
       formData.append("content", newPost);
-      if (selectedImage instanceof File)
-        formData.append("image", selectedImage);
+      if (selectedImage instanceof File) formData.append("image", selectedImage);
 
       const res = await fetch("http://127.0.0.1:8000/api/freedom-wall/posts", {
         method: "POST",
@@ -323,9 +341,7 @@ const FreedomWall = () => {
               <span className="post-author">
                 {isLoggedIn ? user?.name || "You" : "Anonymous"}
               </span>
-              <span className="post-date">
-                {new Date().toLocaleString()}
-              </span>
+              <span className="post-date">{new Date().toLocaleString()}</span>
             </div>
           </div>
 
@@ -350,7 +366,6 @@ const FreedomWall = () => {
             </div>
           )}
 
-          {/* icons row with green border */}
           <div
             className="add-post-container mt-2 d-flex align-items-center"
             style={{
@@ -503,80 +518,77 @@ const FreedomWall = () => {
               </Dropdown>
             )}
 
-           <Card.Body className="p-0">
-  <div className="p-3">
-    <div className="post-header">
-      <div className="avatar">{getAvatarLetter(post.author)}</div>
-      <div className="author-info">
-        <Card.Title className="post-author">{post.author}</Card.Title>
-        <Card.Subtitle className="post-date">{post.date}</Card.Subtitle>
-      </div>
-    </div>
+            <Card.Body className="p-0">
+              <div className="p-3">
+                <div className="post-header">
+                  <div className="avatar">{getAvatarLetter(post.author)}</div>
+                  <div className="author-info">
+                    <Card.Title className="post-author">{post.author}</Card.Title>
+                    <Card.Subtitle className="post-date">{post.date}</Card.Subtitle>
+                  </div>
+                </div>
 
- <p className="post-content ">
-  {censorText(post.content)}
-</p>
+                <p className="post-content">{censorText(post.content)}</p>
 
-    {post.image && (
-      <img
-        src={post.image}
-        alt="Post"
-        className="img-fluid post-image"
-      />
-    )}
+                {post.image && (
+                  <img
+                    src={post.image}
+                    alt="Post"
+                    className="img-fluid post-image"
+                  />
+                )}
 
-    <div
-      className="post-actions d-flex align-items-center mt-3"
-      style={{ justifyContent: "flex-start" }}
-    >
-      {/* Like */}
-      <div
-        className="d-flex align-items-center me-3 like-action"
-        onClick={isLoggedIn ? () => handleLike(post.id) : undefined}
-        style={{ cursor: isLoggedIn ? "pointer" : "default" }}
-      >
-        <ThumbsUp
-          size={18}
-          stroke={post.liked ? "blue" : "black"}
-          fill={post.liked ? "blue" : "none"}
-          className="me-1"
-        />
-        <small>{post.likes}</small>
-      </div>
+                <div
+                  className="post-actions d-flex align-items-center mt-3"
+                  style={{ justifyContent: "flex-start" }}
+                >
+                  {/* Like */}
+                  <div
+                    className="d-flex align-items-center me-3 like-action"
+                    onClick={isLoggedIn ? () => handleReaction(post.id, "like") : undefined}
+                    style={{ cursor: isLoggedIn ? "pointer" : "default" }}
+                  >
+                    <ThumbsUp
+                      size={18}
+                      stroke={post.liked ? "blue" : "black"}
+                      fill={post.liked ? "blue" : "none"}
+                      className="me-1"
+                    />
+                    <small>{post.likes}</small>
+                  </div>
 
-      {/* Heart */}
-      <div
-        className="d-flex align-items-center me-3 heart-action"
-        onClick={isLoggedIn ? () => handleHeart(post.id) : undefined}
-        style={{ cursor: isLoggedIn ? "pointer" : "default" }}
-      >
-        <Heart
-          size={18}
-          className="me-1"
-          fill={post.hearted ? "red" : "none"}
-          stroke={post.hearted ? "red" : "gray"}
-        />
-        <small>{post.hearts ?? 0}</small>
-      </div>
+                  {/* Heart */}
+                  <div
+                    className="d-flex align-items-center me-3 heart-action"
+                    onClick={isLoggedIn ? () => handleReaction(post.id, "heart") : undefined}
+                    style={{ cursor: isLoggedIn ? "pointer" : "default" }}
+                  >
+                    <Heart
+                      size={18}
+                      className="me-1"
+                      fill={post.hearted ? "red" : "none"}
+                      stroke={post.hearted ? "red" : "gray"}
+                    />
+                    <small>{post.hearts ?? 0}</small>
+                  </div>
 
-      {/* Save */}
-      <div
-        className="d-flex align-items-center save-action"
-        onClick={isLoggedIn ? () => handleSave(post.id) : undefined}
-        style={{ cursor: isLoggedIn ? "pointer" : "default" }}
-      >
-        <Bookmark
-          size={18}
-          className="me-1"
-          fill={post.saved ? "green" : "none"}
-          stroke={post.saved ? "green" : "gray"}
-        />
-        <small>{post.saves}</small>
-      </div>
-    </div>
-  </div>
-</Card.Body>
-
+                  {/* Save */}
+                  <div
+                    className="d-flex align-items-center save-action"
+                    onClick={isLoggedIn ? () => handleSave(post.id) : undefined}
+                    style={{ cursor: isLoggedIn ? "pointer" : "default" }}
+                  >
+                    <Bookmark
+                      size={18}
+                      className="me-1"
+                      fill={post.saved ? "green" : "none"}
+                      stroke={post.saved ? "green" : "gray"}
+                    />
+                    <small>{post.saves}</small>
+                  </div>
+                </div>
+              </div>
+            </Card.Body>
           </Card>
         ))}
       </div>

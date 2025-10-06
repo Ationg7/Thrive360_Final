@@ -9,44 +9,38 @@ class FreedomWallPost extends Model
 {
     use HasFactory;
 
+    protected $table = 'freedom_wall_posts'; // set table name if needed
+
     protected $fillable = [
         'content',
         'author',
         'image_path',
-        'likes',
-        'shares',
         'is_guest_post',
         'user_id'
     ];
 
-    protected $casts = [
-        'is_guest_post' => 'boolean',
-        'likes' => 'integer',
-        'shares' => 'integer',
-    ];
+    // Disable timestamps if not using them
+    public $timestamps = true; // or false if your table doesn't have them
 
+    // Relationships
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function incrementLikes()
+    public function reactions()
     {
-        $this->increment('likes');
+        return $this->hasMany(FreedomWallReaction::class, 'freedomwall_id');
     }
 
-    public function decrementLikes()
+    public function reports()
     {
-        $this->decrement('likes');
+        return $this->hasMany(PostReport::class, 'post_id');
     }
 
-    public function incrementShares()
-    {
-        $this->increment('shares');
-    }
+    public function reaction()
+{
+    return $this->belongsTo(Reaction::class);
+}
 
-    public function decrementShares()
-    {
-        $this->decrement('shares');
-    }
 }

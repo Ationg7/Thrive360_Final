@@ -9,6 +9,7 @@ import {
   Dropdown,
   Form,
   Modal,
+  FormControl,
 } from "react-bootstrap";
 import { Heart, Send, Bell, CheckCircle } from "lucide-react";
 import { BsFilter, BsGear, BsEmojiSmile } from "react-icons/bs";
@@ -16,7 +17,7 @@ import { ThreeDotsVertical, Image } from "react-bootstrap-icons";
 import EmojiPicker from "emoji-picker-react";
 
 const Profile = () => {
-  // States
+  // Posts States
   const [posts, setPosts] = useState([
     {
       id: 1,
@@ -24,6 +25,7 @@ const Profile = () => {
       date: "March 3, 2025",
       content: "Been tired and drained lately.",
       likes: 5,
+      hearts: 5,
       shares: 7,
       liked: false,
       shared: false,
@@ -41,13 +43,29 @@ const Profile = () => {
       image: null,
     },
   ]);
-
   const [showPostModal, setShowPostModal] = useState(false);
   const [newPost, setNewPost] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [postFilter, setPostFilter] = useState("all");
 
-  // Handlers
+  // To-Do List States
+  const [tasks, setTasks] = useState([
+    "Do Meditation",
+    "Attend Yoga Session",
+    "Study for Exams",
+    "Complete Project",
+    "Relax and Unwind",
+    "Plan Weekend Activities",
+    "Check Emails",
+  ]);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [newTask, setNewTask] = useState("");
+
+  // Profile Photo Modal State
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+
+  // Post Handlers
   const handlePost = () => {
     if (!newPost.trim()) return;
     const newId = posts.length ? posts[0].id + 1 : 1;
@@ -114,62 +132,112 @@ const Profile = () => {
     );
   };
 
+  // To-Do Handlers
+  const handleAddTask = () => {
+    if (!newTask.trim()) return;
+    setTasks([newTask, ...tasks]);
+    setNewTask("");
+    setShowTaskModal(false);
+  };
+
   return (
     <Container fluid className="profile-container">
       <Row className="gx-3">
         <Col xs={12}>
           <Card className="profile-header position-relative">
-            <Card.Img variant="top" src="../public/images/k.jpg" className="profile-cover" />
-            <Dropdown className="position-absolute" style={{ bottom: "10px", right: "10px" }} align="end">
-              <Dropdown drop="down">
-                <Dropdown.Toggle variant="light" className="three-dots-btn" bsPrefix="no-arrow-toggle">
-                  <ThreeDotsVertical />
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item href="#">Themes</Dropdown.Item>
-                  <Dropdown.Item href="#">To-Do List</Dropdown.Item>
-                  <Dropdown.Item href="#">Notifications</Dropdown.Item>
-                  <Dropdown.Item href="#">History</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+            <Card.Img
+              variant="top"
+              src="../public/images/k.jpg"
+              className="profile-cover"
+            />
+            <Dropdown
+              className="position-absolute"
+              style={{ bottom: "10px", right: "10px" }}
+              align="end"
+            >
+              <Dropdown.Toggle
+                variant="light"
+                className="three-dots-btn"
+                bsPrefix="no-arrow-toggle"
+              >
+                <ThreeDotsVertical />
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item href="#">Settings</Dropdown.Item>
+                <Dropdown.Item onClick={() => setShowPhotoModal(true)}>
+                  Change Photo
+                </Dropdown.Item>
+              </Dropdown.Menu>
             </Dropdown>
+
+           {/* Floating Modal for Changing Photo */}
+<Modal
+  show={showPhotoModal}
+  onHide={() => setShowPhotoModal(false)}
+  centered
+  className="photo-modal"
+>
+  <Modal.Header closeButton>
+    <Modal.Title>Change Photo</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Row className="g-2">
+      <Col xs={4}><img src="/images/photo1.jpg" alt="Photo 1" className="img-fluid rounded" /></Col>
+      <Col xs={4}><img src="/images/photo2.jpg" alt="Photo 2" className="img-fluid rounded" /></Col>
+      <Col xs={4}><img src="/images/photo3.jpg" alt="Photo 3" className="img-fluid rounded" /></Col>
+      <Col xs={4}><img src="/images/photo4.jpg" alt="Photo 4" className="img-fluid rounded" /></Col>
+      <Col xs={4}><img src="/images/photo5.jpg" alt="Photo 5" className="img-fluid rounded" /></Col>
+    </Row>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowPhotoModal(false)}>
+      Close
+    </Button>
+  </Modal.Footer>
+</Modal>
+
+
             <Card.Body>
               <div className="profile-info">
-                <div className="profile-picture">F <span className="profile-add">+</span></div>
-                <div className="follow-info">
-                  <h4>20 Followers • 10 Following</h4>
-                </div>
+                <div className="profile-picture">F</div>
               </div>
             </Card.Body>
           </Card>
         </Col>
 
         {/* Left Side */}
-       <Col md={3} className="events-container">
-  <Card className="mb-3 events-card">
-    <Card.Header>Events</Card.Header>
-    <div className="events-scroll-wrapper">
-      <ListGroup variant="flush">
-        <ListGroup.Item className="event-item">
-          <img src="https://i.pinimg.com/474x/28/48/90/284890478ce284e141c993bbd0339e8c.jpg" alt="Yoga Session" />
-          <h6>Join Yoga Session</h6>
-          <p>Overcome stress and communicate with people.</p>
-        </ListGroup.Item>
-        <ListGroup.Item className="event-item">
-          <img src="https://i.pinimg.com/736x/d7/ea/93/d7ea9311f847f6d3014b0f8431fce2e2.jpg" alt="Self-Care" />
-          <h6>Build a Self-Care Routine</h6>
-          <p>A self-care guide for everyone.</p>
-        </ListGroup.Item>
-        <ListGroup.Item className="event-item">
-          <img src="https://i.pinimg.com/736x/d7/ea/93/d7ea9311f847f6d3014b0f8431fce2e2.jpg" alt="Self-Care 2" />
-          <h6>More Self-Care</h6>
-          <p>Consistency is the key to mental clarity.</p>
-        </ListGroup.Item>
-      </ListGroup>
-    </div>
-  </Card>
-</Col>
+        <Col md={3} className="events-container">
+          <Card className="mb-3 events-card">
+            <Card.Header>Events</Card.Header>
+            <div className="events-scroll-wrapper">
+              <ListGroup variant="flush">
+                <ListGroup.Item className="event-item">
+                  <img
+                    src="https://i.pinimg.com/474x/28/48/90/284890478ce284e141c993bbd0339e8c.jpg"
+                    alt="Yoga Session"
+                  />
+                  <h6>Join Mental Health Awareness</h6>
+                  <p>Overcome stress and communicate with people.</p>
+                </ListGroup.Item>
+              </ListGroup>
+            </div>
+          </Card>
 
+          <Card className="mb-3 events-card">
+            <Card.Header>Challenges You've Joined</Card.Header>
+            <hr className="my-0" />
+            <div className="events-scroll-wrapper">
+              <ListGroup variant="flush">
+                <ListGroup.Item className="event-item">
+                  <h6>Morning Mindfulness</h6>
+                </ListGroup.Item>
+                <ListGroup.Item className="event-item">
+                  <h6>Evening Reflection</h6>
+                </ListGroup.Item>
+              </ListGroup>
+            </div>
+          </Card>
+        </Col>
 
         {/* What's on your mind? */}
         <Col md={6} className="what-form">
@@ -187,23 +255,57 @@ const Profile = () => {
                 style={{ cursor: "pointer" }}
               />
             </div>
-
-
           </Card>
 
-          
-           <Card.Header className="d-flex justify-content-between align-items-center mb-3">
+          {/* Filters and Manage Posts */}
+          <Card.Header className="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <Button variant="light" className="filter-btn">
-                <BsFilter /> Filters
-              </Button>
-              <Button variant="light" className="ms-2 manage-posts-btn">
-                <BsGear /> Manage posts
-              </Button>
+              <Dropdown className="d-inline me-2">
+                <Dropdown.Toggle variant="light" className="filter-btn">
+                  <BsFilter /> Filters
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => setPostFilter("date")}>
+                    By Date
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => setPostFilter("likes")}>
+                    Most Liked
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => setPostFilter("hearts")}>
+                    Most Hearted
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => setPostFilter("images")}>
+                    With Images
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+
+              <Dropdown className="d-inline ms-2">
+                <Dropdown.Toggle
+                  variant="light"
+                  className="manage-posts-btn"
+                  id="manage-posts-dropdown"
+                >
+                  <BsGear /> Manage posts
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => setPostFilter("all")}>
+                    All Posts
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => setPostFilter("my")}>
+                    My Posts
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => setPostFilter("saved")}>
+                    Saved Posts
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </div>
           </Card.Header>
-       
-       
+
+          {/* Post Modal */}
           <Modal show={showPostModal} onHide={() => setShowPostModal(false)} centered>
             <Modal.Header closeButton>
               <Modal.Title>Create Post</Modal.Title>
@@ -223,7 +325,12 @@ const Profile = () => {
                 />
                 {selectedImage && (
                   <div className="image-preview mt-3 text-center">
-                    <img src={selectedImage} alt="Selected" className="img-fluid" style={{ maxHeight: "200px" }} />
+                    <img
+                      src={selectedImage}
+                      alt="Selected"
+                      className="img-fluid"
+                      style={{ maxHeight: "200px" }}
+                    />
                   </div>
                 )}
 
@@ -255,7 +362,11 @@ const Profile = () => {
               </div>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="success" onClick={handlePost} disabled={!newPost.trim()}>
+              <Button
+                variant="success"
+                onClick={handlePost}
+                disabled={!newPost.trim()}
+              >
                 Post
               </Button>
             </Modal.Footer>
@@ -282,43 +393,25 @@ const Profile = () => {
                   />
                 )}
                 <div className="post-actions d-flex gap-3">
-                  <div
-                    className="like-button d-flex align-items-center"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleLike(post.id)}
-                  >
-                    <Heart
-                      color={post.liked ? "red" : "black"}
-                      fill={post.liked ? "red" : "none"}
-                      size={18}
-                      className="me-1"
-                    />
+                  <div className="like-button d-flex align-items-center" style={{ cursor: "pointer" }} onClick={() => handleLike(post.id)}>
+                    <Heart color={post.liked ? "red" : "black"} fill={post.liked ? "red" : "none"} size={18} className="me-1" />
                     <small>{post.likes}</small>
                   </div>
-                  <div
-                    className="share-button d-flex align-items-center"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleShare(post.id)}
-                  >
-                    <Send
-                      color={post.shared ? "blue" : "black"}
-                      fill={post.shared ? "blue" : "none"}
-                      size={18}
-                      className="me-1"
-                    />
+                  <div className="share-button d-flex align-items-center" style={{ cursor: "pointer" }} onClick={() => handleShare(post.id)}>
+                    <Send color={post.shared ? "blue" : "black"} fill={post.shared ? "blue" : "none"} size={18} className="me-1" />
                     <small>{post.shares}</small>
                   </div>
                 </div>
               </Card.Body>
             </Card>
           ))}
-
         </Col>
 
         {/* Right Sidebar */}
         <Col md={3} className="right-sidebar">
           <Card className="mb-3 right-sidebar-card">
             <Card.Header>Notifications</Card.Header>
+            <hr className="my-0" />
             <ListGroup variant="flush">
               <ListGroup.Item className="notification-item">
                 <Bell className="me-2" /> Welcome to Thrive360!
@@ -330,28 +423,44 @@ const Profile = () => {
             </ListGroup>
           </Card>
 
-          <Card className="right-sidebar-card">
-            <Card.Header>To Do List</Card.Header>
+          <Card className="right-sidebar-card position-relative">
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              To Do List
+              <Button className="plus-button" onClick={() => setShowTaskModal(true)}>+</Button>
+            </Card.Header>
+            <hr className="my-0" />
+
             <ListGroup variant="flush">
-              {[
-                "Do Meditation",
-                "Attend Yoga Session",
-                "Study for Exams",
-                "Complete Project",
-                "Relax and Unwind",
-                "Plan Weekend Activities",
-                "Check Emails",
-                 
-              ].map((task, idx) => (
-                <ListGroup.Item
-                  key={idx}
-                  className="d-flex justify-content-between align-items-center recent-activity-item"
-                >
+              {tasks.map((task, idx) => (
+                <ListGroup.Item key={idx} className="d-flex justify-content-between align-items-center recent-activity-item">
                   <span>{task}</span>
                   <Form.Check type="checkbox" className="mb-0 green-checkbox" />
                 </ListGroup.Item>
               ))}
             </ListGroup>
+
+            {/* Modal for adding new task */}
+            <Modal show={showTaskModal} onHide={() => setShowTaskModal(false)} centered>
+              <Modal.Header closeButton>
+                <Modal.Title>Add New Task</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <FormControl
+                  type="text"
+                  placeholder="Enter task"
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={() => setShowTaskModal(false)}>
+                  Cancel
+                </Button>
+                <Button variant="success" onClick={handleAddTask} disabled={!newTask.trim()}>
+                  Add Task
+                </Button>
+              </Modal.Footer>
+            </Modal>
           </Card>
         </Col>
       </Row>

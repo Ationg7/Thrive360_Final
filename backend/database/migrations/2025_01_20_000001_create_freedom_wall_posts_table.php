@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('freedom_wall_posts', function (Blueprint $table) {
-            $table->id();
-            $table->text('content');
-            $table->string('author')->default('Anonymous');
-            $table->string('image_path')->nullable();
-            $table->integer('likes')->default(0);
-            $table->integer('shares')->default(0);
-            $table->boolean('is_guest_post')->default(false);
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->timestamps();
-        });
+    Schema::create('freedom_wall_posts', function (Blueprint $table) {
+    $table->id();
+    $table->string('content');
+    $table->string('author')->nullable();
+    $table->string('image_path')->nullable();
+    $table->boolean('is_guest_post')->default(true);
+    $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+    $table->timestamps();
+});
+
     }
 
     /**

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\FreedomWallPost;
+use App\Models\Reaction;
+use App\Models\FreedomWallReaction;
 use App\Models\PostReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -45,27 +47,35 @@ class FreedomWallController extends Controller
         return response()->json($post, 201);
     }
 
-    public function like(Request $request, $id)
-    {
-        $post = FreedomWallPost::findOrFail($id);
-        $post->incrementLikes();
-        
-        return response()->json([
-            'message' => 'Post liked successfully',
-            'likes' => $post->fresh()->likes
-        ]);
-    }
+   public function react(Request $request, FreedomWallPost $post)
+{
+    $request->validate([
+        'reaction_type' => 'required|string|in:like,heart',
+    ]);
 
-    public function share(Request $request, $id)
-    {
-        $post = FreedomWallPost::findOrFail($id);
-        $post->incrementShares();
-        
-        return response()->json([
-            'message' => 'Post shared successfully',
-            'shares' => $post->fresh()->shares
-        ]);
-    }
+    $reaction = Reaction::firstOrCreate(['name' => $request->reaction_type]);
+
+    $freedomwallReaction = FreedomWallReaction::updateOrCreate(
+        ['freedomwall_id' => $post->id, 'user_id' => auth()->id()],
+        ['reaction_id' => $reaction->id]
+    );
+
+    $likes = $post->reactions()->whereHas('reaction', function ($q) {
+        $q->where('name', 'like');
+    })->count();
+
+    $hearts = $post->reactions()->whereHas('reaction', function ($q) {
+        $q->where('name', 'heart');
+    })->count();
+
+    return response()->json([
+        'likes' => $likes,
+        'hearts' => $hearts,
+        'user_reaction' => $request->reaction_type,
+    ]);
+}
+
+
 
     public function report(Request $request, $id)
     {

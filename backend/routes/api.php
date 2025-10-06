@@ -21,8 +21,6 @@ Route::post('/login', [AuthController::class, 'login']);
 // Freedom Wall routes
 Route::get('/freedom-wall/posts', [FreedomWallController::class, 'index']);
 Route::post('/freedom-wall/posts', [FreedomWallController::class, 'store']);
-Route::post('/freedom-wall/posts/{id}/like', [FreedomWallController::class, 'like']);
-Route::post('/freedom-wall/posts/{id}/share', [FreedomWallController::class, 'share']);
 Route::post('/freedom-wall/posts/{id}/report', [FreedomWallController::class, 'report']);
 
 // Challenge routes (public)
@@ -32,6 +30,7 @@ Route::get('/challenges/{id}', [ChallengeController::class, 'show']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/freedom-wall/posts/{post}/react', [FreedomWallController::class, 'react']);
     
     // Freedom Wall protected routes
     Route::delete('/freedom-wall/posts/{id}', [FreedomWallController::class, 'destroy']);
