@@ -39,6 +39,8 @@ import AdminPsychiatrists from "./Pages/AdminPsychiatrists";
 import AdminMeditation from "./Pages/AdminMeditation";
 import AdminBlogs from "./Pages/AdminBlogs";
 import AdminSettings from "./Pages/AdminSettings";
+import AdminEvents from "./Pages/AdminEvents";
+
 
 import { AuthProvider, useAuth } from "./AuthContext";
 import { ChallengesProvider } from "./Pages/Challenges";
@@ -59,6 +61,7 @@ function Layout() {
     "/admin/reports",
     "/admin/psychiatrists",
     "/admin/settings",
+    "/admin/events",
   ];
   const noNavbarRoutes = ["/dashboard"];
   const noFooterRoutes = [
@@ -162,6 +165,8 @@ const router = createBrowserRouter([
       { path: "admin/reports", element: <AdminReports /> },
       { path: "admin/psychiatrists", element: <AdminPsychiatrists /> },
       { path: "admin/settings", element: <AdminSettings /> },
+      { path: "admin/events", element: <AdminEvents /> },
+
     ],
   },
 ], {

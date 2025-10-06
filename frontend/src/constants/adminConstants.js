@@ -9,11 +9,13 @@ export const API_ENDPOINTS = {
   MEDITATION: 'http://127.0.0.1:8000/api/admin/meditation', // GET meditation list
   BLOGS: 'http://127.0.0.1:8000/api/admin/blogs',
   ANALYTICS: 'http://127.0.0.1:8000/api/admin/analytics',
+  EVENTS_LIST: 'http://127.0.0.1:8000/api/events',
 
   // Upload / Create endpoints (POST)
   UPLOAD_CHALLENGE: 'http://127.0.0.1:8000/api/admin/challenges', // matches Laravel store route
   UPLOAD_MEDITATION: 'http://127.0.0.1:8000/api/admin/meditation', // matches Laravel storeMeditation
   UPLOAD_BLOG: 'http://127.0.0.1:8000/api/admin/blogs', // matches your backend
+  UPLOAD_EVENT: 'http://127.0.0.1:8000/api/events'
 };
 
 export const STORAGE_KEYS = {
@@ -33,6 +35,7 @@ export const ROUTES = {
   REPORTS: '/admin/reports',
   PSYCHIATRISTS: '/admin/psychiatrists',
   SETTINGS: '/admin/settings',
+  EVENTS_MANAGEMENT: '/admin/events',
 };
 
 export const COLORS = {
@@ -81,4 +84,6 @@ export const NAVIGATION_BUTTONS = [
   { id: 'analytics', label: 'Analytics', color: COLORS.PURPLE, route: ROUTES.ANALYTICS, badge: 0 },
   { id: 'reports', label: 'Reports', color: COLORS.INFO, route: ROUTES.REPORTS, badge: 0 },
   { id: 'psychiatrists', label: 'Psychiatrists', color: '#16a085', route: ROUTES.PSYCHIATRISTS, badge: 0 },
+  { id: 'events', label: 'Events', color: COLORS.PURPLE, route: ROUTES.EVENTS_MANAGEMENT, badge: 0 },
+
 ];

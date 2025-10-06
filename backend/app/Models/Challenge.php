@@ -38,10 +38,11 @@ class Challenge extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function userProgress()
+   public function participantsList()
     {
-        return $this->hasMany(UserChallengeProgress::class);
+    return $this->hasMany(UserChallengeProgress::class);
     }
+
 
     public function scopeActive($query)
     {

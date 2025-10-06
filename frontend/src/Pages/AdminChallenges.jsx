@@ -7,6 +7,8 @@ import { API_ENDPOINTS, STORAGE_KEYS, ROUTES, MESSAGES } from '../constants/admi
 import ErrorBoundary from '../components/ErrorBoundary';
 import MessageDisplay from '../components/MessageDisplay';
 import './AdminChallenges.css';
+import { Table } from 'react-bootstrap';
+
 
 const AdminChallenges = memo(() => {
   const [challenges, setChallenges] = useState([]);
@@ -249,91 +251,54 @@ const AdminChallenges = memo(() => {
           </div>
         </div>
 
-        {/* Challenges List */}
-        <div className="admin-challenges-container">
-          <div className="admin-challenges-header">
-            <h3>Challenges ({filteredChallenges.length})</h3>
-            <button 
-              onClick={fetchChallenges}
-              className="admin-refresh-btn"
-            >
-              Refresh
-            </button>
-          </div>
-          
-          <div className="challenges-grid">
-            {filteredChallenges.map((challenge) => (
-              <div key={challenge.id} className="challenge-card">
-                <div className="challenge-header">
-                  <div className="challenge-title">
-                    <h4>{challenge.title}</h4>
-                    <span className={`challenge-status ${challenge.is_active ? 'active' : 'inactive'}`}>
-                      {challenge.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div className="challenge-meta">
-                    <span className="challenge-date">
-                      {new Date(challenge.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="challenge-content">
-                  <p className="challenge-description">{challenge.description}</p>
-                  
-                  <div className="challenge-details">
-                    <div className="challenge-detail">
-                      <span className="detail-label">Duration:</span>
-                      <span className="detail-value">{challenge.duration_days || 'N/A'} days</span>
-                    </div>
-                    <div className="challenge-detail">
-                      <span className="detail-label">Difficulty:</span>
-                      <span className={`difficulty-badge ${challenge.difficulty_level?.toLowerCase() || 'medium'}`}>
-                        {challenge.difficulty_level || 'Medium'}
-                      </span>
-                    </div>
-                    <div className="challenge-detail">
-                      <span className="detail-label">Category:</span>
-                      <span className="detail-value">{challenge.category || 'General'}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="challenge-creator">
-                  <div className="creator-info">
-                    <div className="creator-avatar">
-                      {challenge.user ? challenge.user.name.charAt(0).toUpperCase() : 'A'}
-                    </div>
-                    <div className="creator-details">
-                      <div className="creator-name">
-                        {challenge.user ? challenge.user.name : 'System'}
-                      </div>
-                      <div className="creator-email">
-                        {challenge.user ? challenge.user.email : 'admin@thrive360.com'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="challenge-actions">
-                  <button
-                    onClick={() => handleDeleteChallenge(challenge.id, challenge.title)}
-                    className="action-btn delete"
-                    title="Delete Challenge"
-                  >
-                    🗑️ Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-            
-            {filteredChallenges.length === 0 && (
-              <div className="admin-empty-state">
-                <p>No challenges found matching your criteria.</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <Table striped bordered hover responsive>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Participants</th>
+      <th>Duration</th>
+      <th>Difficulty</th>
+      <th>Category</th>
+      <th>Created At</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filteredChallenges.map((challenge, index) => (
+      <tr key={challenge.id}>
+        <td>{index + 1}</td>
+        <td>{challenge.title}</td>
+        <td>{challenge.description}</td>
+        <td>{challenge.user_progress_count || 0}</td>
+        <td>{challenge.duration_days || 'N/A'} days</td>
+        <td>{challenge.difficulty_level || 'Medium'}</td>
+        <td>{challenge.category || 'General'}</td>
+        <td>{new Date(challenge.created_at).toLocaleDateString()}</td>
+        <td>{challenge.is_active ? 'Active' : 'Inactive'}</td>
+        <td>
+          <button
+            onClick={() => handleDeleteChallenge(challenge.id, challenge.title)}
+            className="action-btn delete"
+          >
+            🗑️ Delete
+          </button>
+        </td>
+      </tr>
+    ))}
+    
+    {filteredChallenges.length === 0 && (
+      <tr>
+        <td colSpan="10" style={{ textAlign: 'center' }}>
+          No challenges found matching your criteria.
+        </td>
+      </tr>
+    )}
+  </tbody>
+</Table>
+
 
         {/* Upload Modal */}
         {showUploadModal && (

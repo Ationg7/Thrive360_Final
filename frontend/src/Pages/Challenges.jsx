@@ -14,22 +14,23 @@ export const ChallengesProvider = ({ children }) => {
   const { isLoggedIn } = useAuth();
 
   useEffect(() => {
-    const loadChallenges = async () => {
-      try {
-        const data = await challengesAPI.getChallenges();
-        setJoinedChallenges(
-          data.map((c) => ({
-            ...c,
-            status: c.status ?? "Not Started",
-            theme: c.theme ?? "blue",
-          }))
-        );
-      } catch (err) {
-        console.error("Error loading challenges:", err);
-      }
-    };
-    loadChallenges();
-  }, []);
+  const loadChallenges = async () => {
+    try {
+      const data = await challengesAPI.getChallenges();
+      setJoinedChallenges(
+        data.map((c) => ({
+          ...c,
+          status: c.status ?? "Not Started",
+          theme: c.theme ?? "blue",
+        }))
+      );
+    } catch (err) {
+      console.error("Error loading challenges:", err);
+    }
+  };
+  loadChallenges();
+}, []);
+
 
   const joinChallenge = (challenge) => {
     setJoinedChallenges((prev) => {

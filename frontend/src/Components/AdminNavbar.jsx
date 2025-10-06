@@ -69,7 +69,7 @@ const AdminNavbar = memo(() => {
 
         {/* Navigation Links */}
         <div className="admin-navbar-links">
-          {NAVIGATION_BUTTONS.map(({ id, label, color, route }) => {
+          {NAVIGATION_BUTTONS.map(({ id, label, route }) => {
             const badgeCount = badges[id] || 0;
             return (
               <button 

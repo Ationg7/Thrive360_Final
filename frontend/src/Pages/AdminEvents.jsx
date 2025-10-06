@@ -47,60 +47,84 @@ const AdminEvents = () => {
   };
 
   // Save event
-  const saveEvent = async () => {
-    if (!formData.title.trim() || !formData.description.trim() || !formData.start_date) {
-      setError('Please fill in all required fields');
-      return;
+const saveEvent = async () => {
+  if (!formData.title.trim() || !formData.description.trim() || !formData.start_date) {
+    setError('Please fill in all required fields');
+    return;
+  }
+
+  try {
+    const adminToken = localStorage.getItem('adminToken');
+    const formDataToSend = new FormData();
+
+    // Convert datetime-local to Laravel compatible format
+    const formatDateForLaravel = (datetimeLocal) => {
+      if (!datetimeLocal) return '';
+      const date = new Date(datetimeLocal);
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      const hh = String(date.getHours()).padStart(2, '0');
+      const min = String(date.getMinutes()).padStart(2, '0');
+      const ss = '00';
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+    };
+
+    // Append required fields
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('start_date', formatDateForLaravel(formData.start_date));
+
+    // Optional fields
+    if (formData.end_date) formDataToSend.append('end_date', formatDateForLaravel(formData.end_date));
+    if (formData.location) formDataToSend.append('location', formData.location);
+    if (formData.max_participants) formDataToSend.append('max_participants', Number(formData.max_participants));
+    if (formData.image) formDataToSend.append('image', formData.image);
+
+    const url = editingEvent
+      ? `http://127.0.0.1:8000/api/admin/events/${editingEvent.id}`
+      : 'http://127.0.0.1:8000/api/admin/events';
+
+    const method = editingEvent ? 'POST' : 'POST'; // If using Laravel POST for both create/update with _method=PUT
+
+    if (editingEvent) {
+      formDataToSend.append('_method', 'PUT'); // Laravel expects this for PUT via FormData
     }
 
-    try {
-      const adminToken = localStorage.getItem('adminToken');
-      const formDataToSend = new FormData();
-      
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== null && formData[key] !== '') {
-          formDataToSend.append(key, formData[key]);
-        }
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: formDataToSend
+    });
+
+    if (response.ok) {
+      setSuccess(editingEvent ? 'Event updated successfully' : 'Event created successfully');
+      setShowModal(false);
+      setEditingEvent(null);
+      setFormData({
+        title: '',
+        description: '',
+        location: '',
+        start_date: '',
+        end_date: '',
+        category: 'general',
+        max_participants: '',
+        image: null
       });
-
-      const url = editingEvent 
-        ? `http://127.0.0.1:8000/api/admin/events/${editingEvent.id}`
-        : 'http://127.0.0.1:8000/api/admin/events';
-      
-      const method = editingEvent ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${adminToken}`
-        },
-        body: formDataToSend
-      });
-
-      if (response.ok) {
-        setSuccess(editingEvent ? 'Event updated successfully' : 'Event created successfully');
-        setShowModal(false);
-        setEditingEvent(null);
-        setFormData({
-          title: '',
-          description: '',
-          location: '',
-          start_date: '',
-          end_date: '',
-          category: 'general',
-          max_participants: '',
-          image: null
-        });
-        await loadEvents();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to save event');
-      }
-    } catch (error) {
-      console.error('Error saving event:', error);
-      setError('Failed to save event');
+      await loadEvents();
+    } else {
+      const errorData = await response.json();
+      setError(errorData.message || 'Failed to save event');
     }
-  };
+  } catch (error) {
+    console.error('Error saving event:', error);
+    setError('Failed to save event');
+  }
+};
+
 
   // Delete event
   const deleteEvent = async (id) => {
@@ -128,21 +152,23 @@ const AdminEvents = () => {
     }
   };
 
-  // Edit event
-  const editEvent = (event) => {
-    setEditingEvent(event);
-    setFormData({
-      title: event.title,
-      description: event.description,
-      location: event.location || '',
-      start_date: event.start_date ? new Date(event.start_date).toISOString().slice(0, 16) : '',
-      end_date: event.end_date ? new Date(event.end_date).toISOString().slice(0, 16) : '',
-      category: event.category,
-      max_participants: event.max_participants || '',
-      image: null
-    });
-    setShowModal(true);
-  };
+  /// Edit event
+const editEvent = (event) => {
+  setEditingEvent(event);
+  setFormData({
+    title: event.title,
+    description: event.description,
+    location: event.location || '',
+    // Convert Laravel datetime to datetime-local format
+    start_date: event.start_date ? new Date(event.start_date).toISOString().slice(0, 16) : '',
+    end_date: event.end_date ? new Date(event.end_date).toISOString().slice(0, 16) : '',
+    category: event.category,
+    max_participants: event.max_participants || '',
+    image: null
+  });
+  setShowModal(true);
+};
+
 
   // Get category badge variant
   const getCategoryVariant = (category) => {

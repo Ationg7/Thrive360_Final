@@ -10,10 +10,15 @@ class AdminChallengeController extends Controller
 {
     // Fetch all challenges
     public function index()
-    {
-        $challenges = Challenge::with('user')->orderBy('created_at', 'desc')->get();
-        return response()->json($challenges);
-    }
+{
+    $challenges = Challenge::with('user')
+        ->withCount('participantsList') // adds participants_count
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return response()->json($challenges);
+}
+
 
     // Upload a new challenge
     public function store(Request $request)

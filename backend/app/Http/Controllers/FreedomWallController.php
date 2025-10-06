@@ -74,50 +74,59 @@ class FreedomWallController extends Controller
     }
 
     public function react(Request $request, $postId)
-    {
-        $request->validate([
-            'reaction_type' => 'required|string|in:like,heart,sad',
-        ]);
+{
+    $request->validate([
+        'reaction_type' => 'required|string|in:like,heart,sad',
+    ]);
 
-        $post = FreedomWallPost::findOrFail($postId);
-        $reactionType = $request->reaction_type;
-        $userId = auth()->id();
+    $post = FreedomWallPost::findOrFail($postId);
+    $reactionType = $request->reaction_type;
+    $userId = auth()->id();
 
-        // Check if user already reacted to this post
-        $existingReaction = UserPostReaction::where('user_id', $userId)
-            ->where('post_id', $postId)
-            ->first();
+    // Check if user already reacted to this post
+    $existingReaction = UserPostReaction::where('user_id', $userId)
+        ->where('post_id', $postId)
+        ->first();
 
-        if ($existingReaction) {
-            // If user already reacted with the same type, remove the reaction
-            if ($existingReaction->reaction_type === $reactionType) {
-                $existingReaction->delete();
-                $userReaction = null;
-            } else {
-                // If user reacted with different type, update the reaction
-                $existingReaction->update(['reaction_type' => $reactionType]);
-                $userReaction = $reactionType;
-            }
+    if ($existingReaction) {
+        if ($existingReaction->reaction_type === $reactionType) {
+            $existingReaction->delete();
+            $userReaction = null;
         } else {
-            // User hasn't reacted yet, create new reaction
-            UserPostReaction::create([
-                'user_id' => $userId,
-                'post_id' => $postId,
-                'reaction_type' => $reactionType
-            ]);
+            $existingReaction->update(['reaction_type' => $reactionType]);
             $userReaction = $reactionType;
         }
-
-        // Get updated reaction counts
-        $reactionCounts = $post->getReactionCounts();
-
-        return response()->json([
-            'likes' => $reactionCounts['like'],
-            'hearts' => $reactionCounts['heart'],
-            'sad' => $reactionCounts['sad'],
-            'user_reaction' => $userReaction,
+    } else {
+        UserPostReaction::create([
+            'user_id' => $userId,
+            'post_id' => $postId,
+            'reaction_type' => $reactionType
         ]);
+        $userReaction = $reactionType;
+
+        // ✅ Notify post owner if not the same user
+        if ($post->user_id && $post->user_id !== $userId) {
+            Notification::createNotification(
+                $post->user_id,
+                'reaction',
+                'New Reaction on Your Post',
+                'Someone reacted to your post with a ' . $reactionType . ' emoji.',
+                ['post_id' => $post->id, 'reaction_type' => $reactionType]
+            );
+        }
     }
+
+    // Get updated reaction counts
+    $reactionCounts = $post->getReactionCounts();
+
+    return response()->json([
+        'likes' => $reactionCounts['like'],
+        'hearts' => $reactionCounts['heart'],
+        'sad' => $reactionCounts['sad'],
+        'user_reaction' => $userReaction,
+    ]);
+}
+
 
     public function save(Request $request, FreedomWallPost $post)
     {

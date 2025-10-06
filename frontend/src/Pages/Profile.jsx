@@ -9,17 +9,19 @@ import {
   Dropdown,
   Form,
   Modal,
-  FormControl,
 } from "react-bootstrap";
-import { Heart, Send, Bell, CheckCircle } from "lucide-react";
-import { BsFilter, BsGear, BsEmojiSmile } from "react-icons/bs";
+import { Heart, Send, CheckCircle, Smile } from "lucide-react";
+import { BsFilter, BsGear } from "react-icons/bs";
 import { ThreeDotsVertical, Image } from "react-bootstrap-icons";
 import EmojiPicker from "emoji-picker-react";
 import TodoList from "../Components/TodoList";
 import Notifications from "../Components/Notifications";
-import ChallengesHistory from "../Components/ChallengesHistory";
 
 const Profile = () => {
+  // Auth simulation
+  const [isLoggedIn] = useState(true); // or fetch from context
+  const [user] = useState({ name: "You" });
+
   // Posts States
   const [posts, setPosts] = useState([]);
   const [showPostModal, setShowPostModal] = useState(false);
@@ -28,10 +30,17 @@ const Profile = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [postFilter, setPostFilter] = useState("all");
 
-  // To-Do List States (now handled by TodoList component)
+  // Events States
+  const [events, setEvents] = useState([]);
 
   // Profile Photo Modal State
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+
+  // Guest popup state
+  const [showGuestPopup, setShowGuestPopup] = useState(false);
+
+  // Helper
+  const getAvatarLetter = (name) => name[0].toUpperCase();
 
   // Post Handlers
   const handlePost = () => {
@@ -39,7 +48,7 @@ const Profile = () => {
     const newId = posts.length ? posts[0].id + 1 : 1;
     const newPostObj = {
       id: newId,
-      author: "Anonymous",
+      author: isLoggedIn ? user?.name || "You" : "Anonymous",
       date: new Date().toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
@@ -62,9 +71,7 @@ const Profile = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setSelectedImage(reader.result);
-      reader.readAsDataURL(file);
+      setSelectedImage(file);
     }
   };
 
@@ -103,30 +110,36 @@ const Profile = () => {
   // Load posts based on filter
   const loadPosts = async (filter) => {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem("authToken");
       const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       };
 
       let response;
       switch (filter) {
-        case 'saved':
-          response = await fetch('http://127.0.0.1:8000/api/freedom-wall/saved-posts', { headers });
+        case "saved":
+          response = await fetch(
+            "http://127.0.0.1:8000/api/freedom-wall/saved-posts",
+            { headers }
+          );
           if (response.ok) {
             const data = await response.json();
             setPosts(data);
           }
           break;
-        case 'my':
-          response = await fetch('http://127.0.0.1:8000/api/freedom-wall/my-posts', { headers });
+        case "my":
+          response = await fetch(
+            "http://127.0.0.1:8000/api/freedom-wall/my-posts",
+            { headers }
+          );
           if (response.ok) {
             const data = await response.json();
             setPosts(data);
           }
           break;
         default:
-          response = await fetch('http://127.0.0.1:8000/api/freedom-wall/posts');
+          response = await fetch("http://127.0.0.1:8000/api/freedom-wall/posts");
           if (response.ok) {
             const data = await response.json();
             setPosts(data);
@@ -134,7 +147,29 @@ const Profile = () => {
           break;
       }
     } catch (error) {
-      console.error('Error loading posts:', error);
+      console.error("Error loading posts:", error);
+    }
+  };
+
+  // Load events
+  const loadEvents = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+      const response = await fetch("http://127.0.0.1:8000/api/events", {
+        headers,
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setEvents(data);
+      } else {
+        console.error("Failed to fetch events:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
     }
   };
 
@@ -143,7 +178,10 @@ const Profile = () => {
     loadPosts(postFilter);
   }, [postFilter]);
 
-  // To-Do Handlers (now handled by TodoList component)
+  // Load events once on mount
+  useEffect(() => {
+    loadEvents();
+  }, []);
 
   return (
     <Container fluid className="profile-container">
@@ -175,32 +213,63 @@ const Profile = () => {
               </Dropdown.Menu>
             </Dropdown>
 
-           {/* Floating Modal for Changing Photo */}
-<Modal
-  show={showPhotoModal}
-  onHide={() => setShowPhotoModal(false)}
-  centered
-  className="photo-modal"
->
-  <Modal.Header closeButton>
-    <Modal.Title>Change Photo</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <Row className="g-2">
-      <Col xs={4}><img src="/images/photo1.jpg" alt="Photo 1" className="img-fluid rounded" /></Col>
-      <Col xs={4}><img src="/images/photo2.jpg" alt="Photo 2" className="img-fluid rounded" /></Col>
-      <Col xs={4}><img src="/images/photo3.jpg" alt="Photo 3" className="img-fluid rounded" /></Col>
-      <Col xs={4}><img src="/images/photo4.jpg" alt="Photo 4" className="img-fluid rounded" /></Col>
-      <Col xs={4}><img src="/images/photo5.jpg" alt="Photo 5" className="img-fluid rounded" /></Col>
-    </Row>
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={() => setShowPhotoModal(false)}>
-      Close
-    </Button>
-  </Modal.Footer>
-</Modal>
-
+            <Modal
+              show={showPhotoModal}
+              onHide={() => setShowPhotoModal(false)}
+              centered
+              className="photo-modal"
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Change Photo</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Row className="g-2">
+                  <Col xs={4}>
+                    <img
+                      src="/images/photo1.jpg"
+                      alt="Photo 1"
+                      className="img-fluid rounded"
+                    />
+                  </Col>
+                  <Col xs={4}>
+                    <img
+                      src="/images/photo2.jpg"
+                      alt="Photo 2"
+                      className="img-fluid rounded"
+                    />
+                  </Col>
+                  <Col xs={4}>
+                    <img
+                      src="/images/photo3.jpg"
+                      alt="Photo 3"
+                      className="img-fluid rounded"
+                    />
+                  </Col>
+                  <Col xs={4}>
+                    <img
+                      src="/images/photo4.jpg"
+                      alt="Photo 4"
+                      className="img-fluid rounded"
+                    />
+                  </Col>
+                  <Col xs={4}>
+                    <img
+                      src="/images/photo5.jpg"
+                      alt="Photo 5"
+                      className="img-fluid rounded"
+                    />
+                  </Col>
+                </Row>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowPhotoModal(false)}
+                >
+                  Close
+                </Button>
+              </Modal.Footer>
+            </Modal>
 
             <Card.Body>
               <div className="profile-info">
@@ -216,14 +285,13 @@ const Profile = () => {
             <Card.Header>Events</Card.Header>
             <div className="events-scroll-wrapper">
               <ListGroup variant="flush">
-                <ListGroup.Item className="event-item">
-                  <img
-                    src="https://i.pinimg.com/474x/28/48/90/284890478ce284e141c993bbd0339e8c.jpg"
-                    alt="Yoga Session"
-                  />
-                  <h6>Join Mental Health Awareness</h6>
-                  <p>Overcome stress and communicate with people.</p>
-                </ListGroup.Item>
+                {events.map((event) => (
+                  <ListGroup.Item key={event.id} className="event-item">
+                    {event.image && <img src={event.image} alt={event.title} />}
+                    <h6>{event.title}</h6>
+                    <p>{event.description}</p>
+                  </ListGroup.Item>
+                ))}
               </ListGroup>
             </div>
           </Card>
@@ -299,9 +367,6 @@ const Profile = () => {
                   <Dropdown.Item onClick={() => setPostFilter("all")}>
                     All Posts
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={() => setPostFilter("my")}>
-                    My Posts
-                  </Dropdown.Item>
                   <Dropdown.Item onClick={() => setPostFilter("saved")}>
                     Saved Posts
                   </Dropdown.Item>
@@ -311,68 +376,107 @@ const Profile = () => {
           </Card.Header>
 
           {/* Post Modal */}
-          <Modal show={showPostModal} onHide={() => setShowPostModal(false)} centered>
-            <Modal.Header closeButton>
-              <Modal.Title>Create Post</Modal.Title>
+          <Modal
+            show={showPostModal}
+            onHide={() => setShowPostModal(false)}
+            centered
+          >
+            <Modal.Header closeButton style={{ backgroundColor: "#e6f4ea" }}>
+              <Modal.Title>
+                {isLoggedIn ? "Create Post" : "Share Anonymously"}
+              </Modal.Title>
             </Modal.Header>
-            <Modal.Body>
-              <div className="post-modal-content">
-                <div className="post-header d-flex align-items-center mb-3">
-                  <div className="avatar me-2">A</div>
-                  <span className="author-name">Anonymous</span>
+            <Modal.Body style={{ backgroundColor: "#f7fff9" }}>
+              <div className="post-header d-flex align-items-center mb-2">
+                <div className="avatar">
+                  {isLoggedIn && user?.name
+                    ? getAvatarLetter(user.name)
+                    : "A"}
                 </div>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  placeholder="What's on your mind?"
-                  value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
-                />
-                {selectedImage && (
-                  <div className="image-preview mt-3 text-center">
-                    <img
-                      src={selectedImage}
-                      alt="Selected"
-                      className="img-fluid"
-                      style={{ maxHeight: "200px" }}
-                    />
-                  </div>
-                )}
-
-                <div className="add-post-container mt-3 d-flex align-items-center">
-                  <Button variant="light" className="add-post-btn d-flex align-items-center">
-                    Add to your post
-                    <div className="add-post-icons ms-2 d-flex gap-2 align-items-center">
-                      <label htmlFor="image-upload" style={{ cursor: "pointer" }}>
-                        <Image size={20} className="post-icon" />
-                      </label>
-                      <input
-                        type="file"
-                        id="image-upload"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={handleImageUpload}
-                      />
-                      <BsEmojiSmile
-                        size={20}
-                        className="post-icon"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      />
-                    </div>
-                  </Button>
+                <div className="author-info ms-2">
+                  <span className="post-author">
+                    {isLoggedIn ? user?.name || "You" : "Anonymous"}
+                  </span>
+                  <span className="post-date">{new Date().toLocaleString()}</span>
                 </div>
-
-                {showEmojiPicker && <EmojiPicker onEmojiClick={handleEmojiClick} />}
               </div>
+
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder={
+                  isLoggedIn
+                    ? "What's on your mind?"
+                    : "Express yourself freely..."
+                }
+                className="post-textarea"
+                value={newPost}
+                onChange={(e) => setNewPost(e.target.value)}
+              />
+
+              {selectedImage && (
+                <div className="mt-2">
+                  <img
+                    src={
+                      selectedImage instanceof File
+                        ? URL.createObjectURL(selectedImage)
+                        : selectedImage
+                    }
+                    alt="Selected"
+                    className="img-fluid post-image-preview"
+                  />
+                </div>
+              )}
+
+              <div
+                className="add-post-container mt-2 d-flex align-items-center"
+                style={{
+                  border: "1px solid green",
+                  borderRadius: "8px",
+                  padding: "6px",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  htmlFor="image-upload"
+                  style={{ cursor: "pointer" }}
+                  title="Add image"
+                >
+                  <Image size={20} className="post-icon" />
+                </label>
+                <input
+                  type="file"
+                  id="image-upload"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleImageUpload}
+                />
+                <Smile
+                  size={20}
+                  className="post-icon"
+                  onClick={() => setShowEmojiPicker((s) => !s)}
+                  style={{ cursor: "pointer" }}
+                />
+              </div>
+
+              {showEmojiPicker && <EmojiPicker onEmojiClick={handleEmojiClick} />}
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer style={{ backgroundColor: "#e6f4ea" }}>
+              <Button variant="secondary" onClick={() => setShowPostModal(false)}>
+                Cancel
+              </Button>
               <Button
                 variant="success"
-                onClick={handlePost}
-                disabled={!newPost.trim()}
+                onClick={() => {
+                  if (isLoggedIn) {
+                    handlePost();
+                  } else {
+                    setShowGuestPopup(true);
+                    setShowPostModal(false);
+                  }
+                }}
               >
-                Post
+                {isLoggedIn ? "Post" : "Share Anonymously"}
               </Button>
             </Modal.Footer>
           </Modal>
@@ -385,25 +489,49 @@ const Profile = () => {
                   <div className="avatar me-2">A</div>
                   <div>
                     <Card.Title className="post-author mb-0">{post.author}</Card.Title>
-                    <Card.Subtitle className="post-date text-muted">{post.date}</Card.Subtitle>
+                    <Card.Subtitle className="post-date text-muted">
+                      {post.date}
+                    </Card.Subtitle>
                   </div>
                 </div>
                 <Card.Text className="post-content">{post.content}</Card.Text>
                 {post.image && (
                   <img
-                    src={post.image}
+                    src={
+                      post.image instanceof File
+                        ? URL.createObjectURL(post.image)
+                        : post.image
+                    }
                     alt="Post"
                     className="img-fluid post-image mb-2"
                     style={{ maxHeight: "300px" }}
                   />
                 )}
                 <div className="post-actions d-flex gap-3">
-                  <div className="like-button d-flex align-items-center" style={{ cursor: "pointer" }} onClick={() => handleLike(post.id)}>
-                    <Heart color={post.liked ? "red" : "black"} fill={post.liked ? "red" : "none"} size={18} className="me-1" />
+                  <div
+                    className="like-button d-flex align-items-center"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleLike(post.id)}
+                  >
+                    <Heart
+                      color={post.liked ? "red" : "black"}
+                      fill={post.liked ? "red" : "none"}
+                      size={18}
+                      className="me-1"
+                    />
                     <small>{post.likes}</small>
                   </div>
-                  <div className="share-button d-flex align-items-center" style={{ cursor: "pointer" }} onClick={() => handleShare(post.id)}>
-                    <Send color={post.shared ? "blue" : "black"} fill={post.shared ? "blue" : "none"} size={18} className="me-1" />
+                  <div
+                    className="share-button d-flex align-items-center"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleShare(post.id)}
+                  >
+                    <Send
+                      color={post.shared ? "blue" : "black"}
+                      fill={post.shared ? "blue" : "none"}
+                      size={18}
+                      className="me-1"
+                    />
                     <small>{post.shares}</small>
                   </div>
                 </div>
@@ -415,9 +543,6 @@ const Profile = () => {
         {/* Right Sidebar */}
         <Col md={3} className="right-sidebar">
           <Notifications />
-
-        
-
           <TodoList />
         </Col>
       </Row>
