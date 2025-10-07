@@ -336,6 +336,7 @@ const Profile = () => {
           <Card className="mb-3 events-card">
             <Card.Header>Events</Card.Header>
             <div className="events-scroll-wrapper">
+              
               <ListGroup variant="flush">
                 {events.map((event) => (
                   <ListGroup.Item key={event.id} className="event-item">
@@ -352,6 +353,7 @@ const Profile = () => {
             <Card.Header>Challenges You've Joined</Card.Header>
             <hr className="my-0" />
             <div className="events-scroll-wrapper">
+              
               <ListGroup variant="flush">
                  {(() => {
                   const joinedChallenges = JSON.parse(localStorage.getItem('joinedChallenges') || '[]');

@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import Avatar from "./Avatar";
 
 function NavigationBar() {
   const location = useLocation();
