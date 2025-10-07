@@ -16,11 +16,12 @@ import { ThreeDotsVertical, Image } from "react-bootstrap-icons";
 import EmojiPicker from "emoji-picker-react";
 import TodoList from "../Components/TodoList";
 import Notifications from "../Components/Notifications";
+import Avatar from "../Components/Avatar";
+import {useAuth} from "../AuthContext";
 
 const Profile = () => {
-  // Auth simulation
-  const [isLoggedIn] = useState(true); // or fetch from context
-  const [user] = useState({ name: "You" });
+   const { isLoggedIn, user } = useAuth();
+
 
   // Posts States
   const [posts, setPosts] = useState([]);
@@ -40,32 +41,57 @@ const Profile = () => {
   const [showGuestPopup, setShowGuestPopup] = useState(false);
 
   // Helper
-  const getAvatarLetter = (name) => name[0].toUpperCase();
+   const getUserEmail = () => {
+    if (user?.email) return user.email;
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) return JSON.parse(stored)?.email || "";
+    } catch {
+      // Ignore JSON parse errors
+    }
+    return localStorage.getItem("userEmail") || "";
+  };
+
+
 
   // Post Handlers
-  const handlePost = () => {
-    if (!newPost.trim()) return;
-    const newId = posts.length ? posts[0].id + 1 : 1;
-    const newPostObj = {
-      id: newId,
-      author: isLoggedIn ? user?.name || "You" : "Anonymous",
-      date: new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      content: newPost,
-      image: selectedImage,
-      likes: 0,
-      shares: 0,
-      liked: false,
-      shared: false,
-    };
-    setPosts([newPostObj, ...posts]);
-    setNewPost("");
-    setSelectedImage(null);
-    setShowEmojiPicker(false);
-    setShowPostModal(false);
+   const handlePost = async () => {
+    if (!newPost.trim() && !selectedImage) return;
+    try {
+      const formData = new FormData();
+      formData.append("content", newPost);
+      if (selectedImage instanceof File) formData.append("image", selectedImage);
+
+      const res = await fetch("http://127.0.0.1:8000/api/freedom-wall/posts", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Failed to post");
+      const p = await res.json();
+      const entry = {
+        id: p.id,
+        author: p.author || (user?.name || "You"),
+        email: user?.email || getUserEmail(),
+        date: p.created_at
+          ? new Date(p.created_at).toLocaleString()
+          : new Date().toLocaleString(),
+        content: p.content,
+        likes: p.likes || 0,
+        shares: 0,
+        liked: false,
+        shared: false,
+        image: p.image_path ? `http://127.0.0.1:8000/storage/${p.image_path}` : null,
+      };
+      setPosts((prev) => [entry, ...prev]);
+      setNewPost("");
+      setSelectedImage(null);
+      setShowEmojiPicker(false);
+      setShowPostModal(false);
+    } catch (e) {
+      console.error("Error creating post:", e);
+      alert("Failed to create post. Please try again.");
+    }
+
   };
 
   const handleImageUpload = (e) => {
@@ -125,24 +151,43 @@ const Profile = () => {
           );
           if (response.ok) {
             const data = await response.json();
-            setPosts(data);
+           const normalizedPosts = (Array.isArray(data) ? data : []).map((post) => ({
+              ...post,
+              email: post.email || post.user?.email || null,
+              author: post.author || post.user?.name || "Anonymous",
+            }));
+            setPosts(normalizedPosts);
+
+
           }
           break;
-        case "my":
+         case "my":
           response = await fetch(
             "http://127.0.0.1:8000/api/freedom-wall/my-posts",
             { headers }
           );
           if (response.ok) {
             const data = await response.json();
-            setPosts(data);
+            const normalizedPosts = (Array.isArray(data) ? data : []).map((post) => ({
+              ...post,
+              email: post.email || post.user?.email || null,
+              author: post.author || post.user?.name || "Anonymous",
+            }));
+            setPosts(normalizedPosts);
           }
           break;
+
+
         default:
           response = await fetch("http://127.0.0.1:8000/api/freedom-wall/posts");
           if (response.ok) {
             const data = await response.json();
-            setPosts(data);
+           const normalizedPosts = (Array.isArray(data) ? data : []).map((post) => ({
+              ...post,
+              email: post.email || post.user?.email || null,
+              author: post.author || post.user?.name || "Anonymous",
+            }));
+            setPosts(normalizedPosts);
           }
           break;
       }
@@ -177,6 +222,13 @@ const Profile = () => {
   useEffect(() => {
     loadPosts(postFilter);
   }, [postFilter]);
+ // Store user email in localStorage when user changes
+  useEffect(() => {
+    if (user?.email) {
+      localStorage.setItem("userEmail", user.email);
+    }
+  }, [user]);
+
 
   // Load events once on mount
   useEffect(() => {
@@ -273,7 +325,7 @@ const Profile = () => {
 
             <Card.Body>
               <div className="profile-info">
-                <div className="profile-picture">F</div>
+                 <Avatar email={getUserEmail()} size={60} />
               </div>
             </Card.Body>
           </Card>
@@ -301,12 +353,37 @@ const Profile = () => {
             <hr className="my-0" />
             <div className="events-scroll-wrapper">
               <ListGroup variant="flush">
-                <ListGroup.Item className="event-item">
-                  <h6>Morning Mindfulness</h6>
-                </ListGroup.Item>
-                <ListGroup.Item className="event-item">
-                  <h6>Evening Reflection</h6>
-                </ListGroup.Item>
+                 {(() => {
+                  const joinedChallenges = JSON.parse(localStorage.getItem('joinedChallenges') || '[]');
+                  const completedChallenges = JSON.parse(localStorage.getItem('completedChallenges') || '[]');
+                 
+                  if (joinedChallenges.length === 0 && completedChallenges.length === 0) {
+                    return (
+                      <ListGroup.Item className="event-item text-center text-muted">
+                        <h6>No Joined Challenges. Join Now</h6>
+                      </ListGroup.Item>
+                    );
+                  }
+                 
+                  return (
+                    <>
+                      {joinedChallenges.map((challenge, index) => (
+                        <ListGroup.Item key={`joined-${index}`} className="event-item">
+                          <h6>{challenge.title}</h6>
+                          <small className="text-success">In Progress</small>
+                        </ListGroup.Item>
+                      ))}
+                      {completedChallenges.map((challenge, index) => (
+                        <ListGroup.Item key={`completed-${index}`} className="event-item">
+                          <h6>{challenge.title}</h6>
+                          <small className="text-muted">Completed</small>
+                        </ListGroup.Item>
+                      ))}
+                    </>
+                  );
+                })()}
+
+
               </ListGroup>
             </div>
           </Card>
@@ -320,7 +397,10 @@ const Profile = () => {
             style={{ cursor: "pointer" }}
           >
             <div className="post-input d-flex align-items-center p-2">
-              <div className="avatar me-3">A</div>
+              <div className="me-3">
+                <Avatar email={getUserEmail()} size={40} />
+              </div>
+
               <Form.Control
                 type="text"
                 placeholder="What's on your mind?"
@@ -364,8 +444,8 @@ const Profile = () => {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => setPostFilter("all")}>
-                    All Posts
+                  <Dropdown.Item onClick={() => setPostFilter("my")}>
+                    My Posts
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => setPostFilter("saved")}>
                     Saved Posts
@@ -387,15 +467,11 @@ const Profile = () => {
               </Modal.Title>
             </Modal.Header>
             <Modal.Body style={{ backgroundColor: "#f7fff9" }}>
-              <div className="post-header d-flex align-items-center mb-2">
-                <div className="avatar">
-                  {isLoggedIn && user?.name
-                    ? getAvatarLetter(user.name)
-                    : "A"}
-                </div>
+              <div className="post-header d-flex align-items-center mb-1">
+                <Avatar email={getUserEmail()} size={45} />
                 <div className="author-info ms-2">
                   <span className="post-author">
-                    {isLoggedIn ? user?.name || "You" : "Anonymous"}
+                    {isLoggedIn ? (user?.name || "You") : "Anonymous"}
                   </span>
                   <span className="post-date">{new Date().toLocaleString()}</span>
                 </div>
@@ -486,7 +562,10 @@ const Profile = () => {
             <Card key={post.id} className="post-card mb-3">
               <Card.Body>
                 <div className="post-header d-flex align-items-center mb-2">
-                  <div className="avatar me-2">A</div>
+                  <div className="me-2">
+                    <Avatar email={getUserEmail()} size={45} />
+                  </div>
+
                   <div>
                     <Card.Title className="post-author mb-0">{post.author}</Card.Title>
                     <Card.Subtitle className="post-date text-muted">

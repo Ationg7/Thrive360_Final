@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import Avatar from "./Avatar";  
 
 function NavigationBar() {
   const location = useLocation();
@@ -14,7 +15,19 @@ function NavigationBar() {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     setIsLoggedIn(!!token);
-    const email = localStorage.getItem("userEmail");
+     const email = localStorage.getItem("userEmail") || (() => {
+      try {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          const u = JSON.parse(stored);
+          return u?.email || "";
+        }
+      } catch {
+        // Ignore JSON parse errors
+      }
+      return "";
+    })();
+
     setUserEmail(email || "");
   }, [location]);
 
@@ -88,14 +101,7 @@ function NavigationBar() {
             {isLoggedIn ? (
               <div className="d-flex align-items-center gap-3">
                 <Link to="/profile">
-                  <img
-                    src="https://i.pinimg.com/736x/c2/5f/45/c25f4555a84d5beb9663c9aa46301558.jpg"
-                    alt="Profile"
-                    width="60"
-                    height="60"
-                    className="rounded-circle"
-                    style={{ cursor: "pointer" }}
-                  />
+                  <Avatar email={userEmail} size={45} />  
                 </Link>
 
                 <button

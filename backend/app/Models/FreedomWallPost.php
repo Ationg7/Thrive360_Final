@@ -14,6 +14,7 @@ class FreedomWallPost extends Model
     protected $fillable = [
         'content',
         'author',
+        'email',
         'image_path',
         'is_guest_post',
         'user_id',

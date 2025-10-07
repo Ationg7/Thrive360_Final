@@ -15,7 +15,7 @@ class FreedomWallController extends Controller
 {
     public function index()
     {
-        $posts = FreedomWallPost::with(['savedByUsers', 'reactions'])
+        $posts = FreedomWallPost::with(['user','savedByUsers', 'reactions'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -29,6 +29,8 @@ class FreedomWallController extends Controller
                 'id' => $post->id,
                 'content' => $post->content,
                 'author' => $post->author,
+                'email' => $post->user ? $post->user->email : null,
+
                 'image_path' => $post->image_path,
                 'created_at' => $post->created_at,
                 'updated_at' => $post->updated_at,
@@ -186,6 +188,8 @@ class FreedomWallController extends Controller
                     'id' => $post->id,
                     'content' => $post->content,
                     'author' => $post->author,
+                    'email' => $post->user ? $post->user->email : null,
+
                     'image_path' => $post->image_path,
                     'created_at' => $post->created_at,
                     'likes' => $reactionCounts['like'],
@@ -216,6 +220,8 @@ class FreedomWallController extends Controller
                     'id' => $post->id,
                     'content' => $post->content,
                     'author' => $post->author,
+                    'email' => $post->user ? $post->user->email : null,
+
                     'image_path' => $post->image_path,
                     'created_at' => $post->created_at,
                     'likes' => $reactionCounts['like'],

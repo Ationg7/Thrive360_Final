@@ -15,6 +15,7 @@ return new class extends Migration
     $table->id();
     $table->string('content');
     $table->string('author')->nullable();
+     $table->string('email')->nullable();
     $table->string('image_path')->nullable();
     $table->boolean('is_guest_post')->default(true);
     $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');

@@ -2,7 +2,7 @@ import logo from '../assets/Images/logo.png';
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,7 +13,7 @@ const SignUp = () => {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ const SignUp = () => {
       const data = await response.json();
 
       if (response.ok) {
-        login(data.token, data.user);
+        
         setSuccess(true);
         setTimeout(() => navigate("/SignIn"), 2000);
       } else {

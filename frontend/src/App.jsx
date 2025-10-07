@@ -99,7 +99,7 @@ function Layout() {
       {/* Navbars */}
       {isAdminPage && pathname !== "/admin-login" && <AdminNavbar />}
       {!isNoNavbarPage && !isAdminPage && (isPublicPage ? <Navbars /> : <Navbar />)}
-
+         
       {/* Page content */}
       <Outlet />
 

@@ -5,6 +5,7 @@ import { Heart, Bookmark, Image, Smile, ThumbsUp } from "lucide-react";
 import { FaEllipsisV } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
 import { useAuth } from "../AuthContext";
+import Avatar from "../Components/Avatar";
 import { Link } from "react-router-dom";
 import "../App.css";
 
@@ -90,7 +91,11 @@ const FreedomWall = () => {
         const data = await res.json();
         const normalized = (Array.isArray(data) ? data : []).map((p) => ({
           id: p.id,
-          author: p.author || "Anonymous",
+         // Prefer explicit author/name fields from API; fallback to Anonymous
+          author: p.author || p.user?.name || "Anonymous",
+          // Capture email if API provides it (directly or nested under user)
+          email: p.email || p.user?.email || null,
+
           date: p.created_at ? new Date(p.created_at).toLocaleString() : new Date().toLocaleString(),
           content: p.content,
           likes: p.likes || 0,
@@ -232,7 +237,9 @@ const FreedomWall = () => {
       const p = await res.json();
       const entry = {
         id: p.id,
-        author: p.author || "Anonymous",
+          author: p.author || user?.name || "Anonymous",
+        email: user?.email || null,
+
         date: p.created_at ? new Date(p.created_at).toLocaleString() : new Date().toLocaleString(),
         content: p.content,
         likes: p.likes || 0,
@@ -324,8 +331,18 @@ const FreedomWall = () => {
     setHiddenPosts([]);
     setShowUndo(false);
   };
+ const getUserEmail = () => {
+    if (user?.email) return user.email;
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) return JSON.parse(stored)?.email || "";
+    } catch {
+      // Ignore JSON parse errors
+    }
+    return localStorage.getItem("userEmail") || "";
+  };
 
-  const getAvatarLetter = (name) => (name ? name.charAt(0).toUpperCase() : "A");
+
 
   return (
     <Container className="freedom-wall-container">
@@ -348,8 +365,14 @@ const FreedomWall = () => {
 
       {/* New Post Input */}
       <Card className="post-input-card" style={{ cursor: "text" }}>
-        <div className="post-header" style={{ alignItems: "center" }}>
-          <div className="avatar">{isLoggedIn && user?.name ? getAvatarLetter(user.name) : "A"}</div>
+        <div className="post-header" style={{ alignItems: "center" }}>    
+   <Avatar email={user?.email || ""} name={user?.name || "Anonymous"} className="avatar" size={40} />
+
+
+
+
+
+
           <Form.Control
             type="text"
             placeholder={isLoggedIn ? "What's on your mind?" : "Express yourself anonymously..."}
@@ -396,7 +419,10 @@ const FreedomWall = () => {
         </Modal.Header>
         <Modal.Body style={{ backgroundColor: "#f7fff9" }}>
           <div className="post-header" style={{ alignItems: "center" }}>
-            <div className="avatar">{isLoggedIn && user?.name ? getAvatarLetter(user.name) : "A"}</div>
+             <Avatar email={user?.email || ""} name={user?.name || "Anonymous"} className="avatar" size={40} />
+
+
+
             <div className="author-info">
               <span className="post-author">{isLoggedIn ? user?.name || "You" : "Anonymous"}</span>
               <span className="post-date">{new Date().toLocaleString()}</span>
@@ -480,7 +506,15 @@ const FreedomWall = () => {
             <Card.Body className="p-0">
               <div className="p-3">
                 <div className="post-header">
-                  <div className="avatar">{getAvatarLetter(post.author)}</div>
+                  <div className="me-2">
+                   <Avatar 
+  email={post.email} 
+  name={post.author} 
+  className="avatar" 
+  size={40} 
+/>
+</div>
+
                   <div className="author-info">
                     <Card.Title className="post-author">{post.author}</Card.Title>
                     <Card.Subtitle className="post-date">{post.date}</Card.Subtitle>

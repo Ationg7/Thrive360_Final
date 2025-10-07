@@ -80,14 +80,8 @@ function NavigationBar() {
             {isLoggedIn ? (
               <div className="d-flex align-items-center gap-3">
                 <Link to="/profile">
-                  <img
-                    src="https://i.pinimg.com/736x/c2/5f/45/c25f4555a84d5beb9663c9aa46301558.jpg"
-                    alt="Profile"
-                    width="60"
-                    height="60"
-                    className="rounded-circle"
-                    style={{ cursor: "pointer" }}
-                  />
+                  
+                  <Avatar email={userEmail} size={45} />  
                 </Link>
 
                 {/* 🔘 Now opens confirm modal */}
