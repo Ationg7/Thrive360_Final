@@ -1280,13 +1280,12 @@ label {
   padding: 20px;
 }
 
-/* Profile Header */
 .profile-header {
+  position: relative;
   width: 100%;
-  margin: 0;
-  padding: 0;
-  border-radius: 0;
-  overflow: hidden; /* Prevents unwanted spacing */
+  background-color: #fff; /* or keep cover image */
+  border-radius: 0; /* straight edges for the main card */
+  overflow: hidden;
 }
 
 .profile-cover {
@@ -1294,18 +1293,23 @@ label {
   height: 220px; /* Adjust to match the image size */
   object-fit: cover;
 }
-
 .profile-info {
-  display: flex;
-  align-items: center;
-  padding-left: 20px;
+  position: absolute;
+  top: 180px; /* adjust based on header height */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff;
+  border-radius: 50%; /* makes it circular */
+  padding: 5px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 10;
+  left: 5%
+  ;
 }
+
 .profile-body {
-  display: flex;
-  align-items: center;
-  padding: 0;
+  padding-top: 50px; /* space for the floating avatar */
   position: relative;
-  top: -40px; /* Moves the content up to overlap */
 }
 
 /* Smaller dropdown box */
@@ -1340,45 +1344,9 @@ label {
 }
 
 
-.profile-picture {
-  width: 90px;
-  height: 90px;
-  background-color: green;
-  color: white;
-  font-size: 36px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 4px solid white;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  position: absolute;
- margin-top: -70px;
-  left: 20px; /* Adjust for alignment */
-}
 
-.profile-add {
-  position: absolute;
-  bottom: -5px;
-  right: -5px;
-  background: white;
-  color: black;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  font-size: 25px;
-  text-align: center;
-  line-height: 22px;
-  font-weight: bold;
-}
-.follow-info h4 {
-  font-size: 14px; /* Adjust to desired size */
-  font-weight: 500; /* Optional: Adjust thickness */
-  color: #333; /* Optional: Darker text */
-  margin: 0; /* Remove extra spacing */
-  margin-left: 100px;
-}
+
+
 
 /* Events Sidebar */
 .events-card {
@@ -2224,7 +2192,70 @@ button:hover {
     height: auto;
   }
 }
+ 
+/* 🥗 Minimalistic Top Foods Sidebar */
+.top-foods-card.minimalist {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
 
+.top-foods-header {
+  font-size: 16px;
+  font-weight: 600;
+  color: black; /* sky blue accent */
+  text-align: center;
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
+}
+
+.top-foods-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.top-foods-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  padding: 6px 0;
+  border-bottom: 1px solid #f2f2f2;
+  transition: all 0.2s ease-in-out;
+}
+
+.top-foods-list li:last-child {
+  border-bottom: none;
+}
+
+.food-rank {
+  color: green;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.top-foods-list li:hover {
+  color: #0077b6;
+  transform: translateX(5px);
+}
+
+/* ------------------ MOBILE ONLY ------------------ */
+@media (max-width: 1000px) {
+  .blog-container {
+    flex-direction: column; /* stack sidebar below main content */
+  }
+
+  .blog-left,
+  .blog-sidebar {
+    flex: unset; /* remove flex sizing on mobile */
+    width: 100%; /* full width */
+  }
+}
 
 
 /* Meditation CSS */
@@ -3705,5 +3736,78 @@ button:hover {
 .modal-header {
   background-color: white; /* match floating button color */
   color: black;              /* make text readable */
-  border-bottom: none;       /* remove default border */
+  border-bottom: none;     
+  
+  /* remove default border */
 }
+
+ 
+  /* Notification.css*/
+  /* Scroll area styles */
+.notification-scroll-area {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: lightgrey  #f1f1f1; /* Sky blue thumb, light background */
+}
+
+/* Chrome, Edge, Safari */
+.notification-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-scroll-area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.notification-scroll-area::-webkit-scrollbar-thumb {
+  background-color: grey; /* Sky blue */
+  border-radius: 10px;
+}
+
+.notification-scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: grey; /* Navy hover */
+}
+.notification-dropdown {
+  width: 320px;
+  border-radius: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  cursor: pointer;
+  transition: background 0.2s ease;
+  padding: 10px 12px;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+  background-color: #eef5ff;
+}
+
+.blue-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #007bff;
+  border-radius: 50%;
+  margin-left: auto;
+}
+
+.notification-footer {
+  border-top: 1px solid #dee2e6;
+}
+
+.notification-dropdown-wrapper {
+  position: relative;
+}
+
+.notification-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
