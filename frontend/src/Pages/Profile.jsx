@@ -34,7 +34,11 @@ const Profile = () => {
   const [newPost, setNewPost] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+<<<<<<< HEAD
   const [postFilter, setPostFilter] = useState("all");
+=======
+  const [postFilter, setPostFilter] = useState("my");
+>>>>>>> c7e5373 (insert done)
   const [events, setEvents] = useState([]);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showGuestPopup, setShowGuestPopup] = useState(false);
@@ -92,8 +96,10 @@ const Profile = () => {
       formData.append("content", newPost);
       if (selectedImage instanceof File) formData.append("image", selectedImage);
 
-      const res = await fetch("http://127.0.0.1:8000/api/freedom-wall/posts", {
+      const token = localStorage.getItem("authToken");
+      const res = await fetch("http://127.0.0.1:8000/api/freedom-wall/posts/auth", {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         body: formData,
       });
       if (!res.ok) throw new Error("Failed to post");
@@ -101,6 +107,7 @@ const Profile = () => {
       const entry = {
         id: p.id,
         author: p.author || (user?.name || "You"),
+<<<<<<< HEAD
         email: user?.email || getUserEmail(),
         date: p.created_at ? new Date(p.created_at).toLocaleString() : new Date().toLocaleString(),
         content: censorText(p.content),
@@ -111,6 +118,18 @@ const Profile = () => {
         liked: false,
         hearted: false,
         sadded: false,
+=======
+        email: p.email || user?.email || getUserEmail(),
+        date: p.created_at ? new Date(p.created_at).toLocaleString() : new Date().toLocaleString(),
+        content: censorText(p.content),
+        likes: p.likes || 0,
+        hearts: p.hearts || 0,
+        sads: p.sad || 0,
+        saved: !!p.is_saved,
+        liked: !!(p.user_reaction === 'like'),
+        hearted: !!(p.user_reaction === 'heart'),
+        sadded: !!(p.user_reaction === 'sad'),
+>>>>>>> c7e5373 (insert done)
         image: p.image_path ? `http://127.0.0.1:8000/storage/${p.image_path}` : null,
       };
       setPosts((prev) => [entry, ...prev]);
@@ -272,15 +291,21 @@ const Profile = () => {
         case "saved":
           response = await fetch("http://127.0.0.1:8000/api/freedom-wall/saved-posts", { headers });
           break;
+<<<<<<< HEAD
         case "my":
           response = await fetch("http://127.0.0.1:8000/api/freedom-wall/my-posts", { headers });
           break;
         default:
           response = await fetch("http://127.0.0.1:8000/api/freedom-wall/posts");
+=======
+        default:
+          response = await fetch("http://127.0.0.1:8000/api/freedom-wall/my-posts", { headers });
+>>>>>>> c7e5373 (insert done)
           break;
       }
       if (response.ok) {
         const data = await response.json();
+<<<<<<< HEAD
         const normalizedPosts = (Array.isArray(data) ? data : []).map((post) => ({
   ...post,
   email: post.email || post.user?.email || null,
@@ -288,6 +313,28 @@ const Profile = () => {
   content: censorText(post.content),
   date: post.created_at ? new Date(post.created_at).toLocaleString() : "",
 }));
+=======
+        const normalizedPosts = (Array.isArray(data) ? data : []).map((post) => {
+          const imageUrl = post.image_path
+            ? `http://127.0.0.1:8000/storage/${post.image_path}`
+            : null;
+          const userReaction = post.user_reaction || null;
+          return {
+            ...post,
+            email: post.email || post.user?.email || null,
+            author: post.author || post.user?.name || "Anonymous",
+            content: censorText(post.content),
+            date: post.created_at ? new Date(post.created_at).toLocaleString() : "",
+            image: imageUrl,
+            liked: userReaction === "like",
+            hearted: userReaction === "heart",
+            saved: !!post.is_saved,
+            likes: post.likes || 0,
+            hearts: post.hearts || 0,
+            sad: post.sad || 0,
+          };
+        });
+>>>>>>> c7e5373 (insert done)
 
         setPosts(normalizedPosts);
       }
@@ -415,6 +462,7 @@ const Profile = () => {
         {/* Left Side */}
         <Col md={3} className="events-container">
   <Card className="mb-3 events-card">
+<<<<<<< HEAD
 
     
    
@@ -505,6 +553,84 @@ const Profile = () => {
   <hr className="my-0" />
 </Card>
 
+=======
+
+    
+   
+    <div className="events-scroll-wrapper">
+      <Events hideCardHeader /> {/* pass a prop to hide the header in Events.jsx */}
+    </div>
+  </Card>
+
+
+           
+           {/* history of joined challenge */}
+<Card className="mb-3 events-card shadow-sm border-0" style={{ fontFamily: 'Poppins, sans-serif' }}>
+  {/* Header */}
+  <Card.Header className="d-flex justify-content-between align-items-center bg-white">
+    <div className="d-flex align-items-center">
+      <History className="me-2" />
+      <div className="fw-semibold">Challenge History</div>
+    </div>
+  </Card.Header>
+
+  <hr className="my-0" />
+
+  {/* Scrollable List */}
+  <div className="events-scroll-wrapper" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+    <ListGroup variant="flush">
+      {(() => {
+        const [items, setItems] = React.useState([]);
+        React.useEffect(() => {
+          const load = async () => {
+            try {
+              const token = localStorage.getItem('authToken');
+              if (!token) { setItems([]); return; }
+              const res = await fetch('http://127.0.0.1:8000/api/challenges/history', { headers: { Authorization: `Bearer ${token}` } });
+              if (res.ok) {
+                const data = await res.json();
+                setItems(data.filter((x) => x.is_completed));
+              }
+            } catch (e) { /* ignore */ }
+          };
+          load();
+        }, []);
+
+        if (items.length === 0) {
+          return (
+            <ListGroup.Item className="text-center text-muted py-3 small">
+              No Completed Challenges yet.
+            </ListGroup.Item>
+          );
+        }
+
+        const renderBadge = (status) => {
+          const style = status === 'In Progress'
+            ? { borderColor: '#FFC107', color: '#FFC107' }
+            : { borderColor: '#198754', color: '#198754' };
+          return (
+            <span className="px-2 py-1 rounded-pill" style={{ border: `1px solid ${style.borderColor}`, color: style.color, backgroundColor: 'transparent', fontSize: '10px', fontWeight: 500, fontFamily: 'Poppins, sans-serif' }}>
+              {status}
+            </span>
+          );
+        };
+
+        return items.map((entry, idx) => (
+          <ListGroup.Item key={`completed-${idx}`} className="px-3 py-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <h6 className="mb-0">{entry.challenge_title}</h6>
+              {renderBadge('Completed')}
+            </div>
+          </ListGroup.Item>
+        ));
+      })()}
+    </ListGroup>
+  </div>
+
+  <hr className="my-0" />
+</Card>
+
+>>>>>>> c7e5373 (insert done)
         </Col>
 
         {/* What's on your mind? */}
@@ -753,7 +879,7 @@ const Profile = () => {
         </Col>
         {/* Right Sidebar */}
         <Col md={3} className="right-sidebar">
-          <Notifications />
+          
           <TodoList />
         </Col>
       </Row>

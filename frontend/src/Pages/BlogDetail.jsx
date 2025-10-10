@@ -81,7 +81,11 @@ const BlogDetail = () => {
             <h1 className="blog-title">{blog.title}</h1>
             <p className="blog-date">{blog.date}</p>
 
+<<<<<<< HEAD
             <div className="card category-card">
+=======
+            <div className="category">
+>>>>>>> c7e5373 (insert done)
               <p>{blog.category}</p>
             </div>
 
@@ -97,8 +101,12 @@ const BlogDetail = () => {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Sidebar */}
         <div className="blog-sidebar">
+=======
+        <div className="blog-sidebar" >
+>>>>>>> c7e5373 (insert done)
           <div className="sidebar-section card author-card">
             <img
               src="https://via.placeholder.com/300x200"

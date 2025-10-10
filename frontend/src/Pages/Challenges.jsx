@@ -15,6 +15,7 @@ export const ChallengesProvider = ({ children }) => {
   const { isLoggedIn } = useAuth();
 
   useEffect(() => {
+<<<<<<< HEAD
     const loadChallenges = async () => {
       try {
         const storedJoined = localStorage.getItem('joinedChallenges');
@@ -69,6 +70,67 @@ export const ChallengesProvider = ({ children }) => {
       localStorage.setItem('joinedChallenges', JSON.stringify(updatedJoined));
       return updatedJoined;
     });
+=======
+    const loadUserChallengeHistory = async () => {
+      try {
+        if (!isLoggedIn) return;
+        const history = await challengesAPI.getUserHistory();
+        const joined = history.filter((h) => !h.is_completed).map((h) => ({
+          id: h.challenge_id,
+          title: h.challenge_title,
+          description: h.challenge_type,
+          type: h.challenge_type,
+          status: h.status === 'Completed' ? 'Completed' : 'In Progress',
+          progress: h.progress_percentage,
+        }));
+        const completed = history.filter((h) => h.is_completed).map((h) => ({
+          id: h.challenge_id,
+          title: h.challenge_title,
+          description: h.challenge_type,
+          type: h.challenge_type,
+          status: 'Completed',
+          progress: h.progress_percentage,
+        }));
+        setJoinedChallenges(joined);
+        setCompletedChallenges(completed);
+      } catch (err) {
+        console.error('Error fetching challenge history:', err);
+      }
+    };
+    loadUserChallengeHistory();
+  }, [isLoggedIn]);
+
+  const joinChallenge = async (challenge) => {
+    try {
+      if (!isLoggedIn) return;
+      await challengesAPI.joinChallenge(challenge.id);
+      // Refresh history
+      const history = await challengesAPI.getUserHistory();
+      const joined = history.filter((h) => !h.is_completed);
+      const completed = history.filter((h) => h.is_completed);
+      setJoinedChallenges(joined.map((h) => ({ id: h.challenge_id, title: h.challenge_title, description: h.challenge_type, type: h.challenge_type, status: h.status, progress: h.progress_percentage })));
+      setCompletedChallenges(completed.map((h) => ({ id: h.challenge_id, title: h.challenge_title, description: h.challenge_type, type: h.challenge_type, status: 'Completed', progress: h.progress_percentage })));
+    } catch (err) {
+      console.error('Failed to join challenge:', err);
+    }
+  };
+
+  const markDone = async (title) => {
+    try {
+      if (!isLoggedIn) return;
+      const item = joinedChallenges.find((c) => c.title === title);
+      if (!item) return;
+      await challengesAPI.updateProgress(item.id, { progress_percentage: 100 });
+      // Refresh lists
+      const history = await challengesAPI.getUserHistory();
+      const joined = history.filter((h) => !h.is_completed);
+      const completed = history.filter((h) => h.is_completed);
+      setJoinedChallenges(joined.map((h) => ({ id: h.challenge_id, title: h.challenge_title, description: h.challenge_type, type: h.challenge_type, status: h.status, progress: h.progress_percentage })));
+      setCompletedChallenges(completed.map((h) => ({ id: h.challenge_id, title: h.challenge_title, description: h.challenge_type, type: h.challenge_type, status: 'Completed', progress: h.progress_percentage })));
+    } catch (err) {
+      console.error('Failed to mark as done:', err);
+    }
+>>>>>>> c7e5373 (insert done)
   };
 
   return (
