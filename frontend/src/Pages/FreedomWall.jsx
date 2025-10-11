@@ -229,8 +229,17 @@ const FreedomWall = () => {
       formData.append("content", newPost);
       if (selectedImage instanceof File) formData.append("image", selectedImage);
 
-      const res = await fetch("http://127.0.0.1:8000/api/freedom-wall/posts", {
+      const token = localStorage.getItem('authToken');
+      const isAuth = !!token && isLoggedIn;
+      const url = isAuth
+        ? "http://127.0.0.1:8000/api/freedom-wall/posts/auth"
+        : "http://127.0.0.1:8000/api/freedom-wall/posts";
+
+      const headers = isAuth ? { 'Authorization': `Bearer ${token}` } : undefined;
+
+      const res = await fetch(url, {
         method: "POST",
+        headers,
         body: formData,
       });
       if (!res.ok) throw new Error("Failed to post");

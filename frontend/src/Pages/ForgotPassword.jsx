@@ -10,7 +10,7 @@ const ForgotPassword = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleResend = (e) => {
+  const handleResend = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess(false);
@@ -20,10 +20,22 @@ const ForgotPassword = () => {
       return;
     }
 
-    // Mock API call simulation
-    setTimeout(() => {
-      setSuccess(true);
-    }, 500);
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess(true);
+      } else {
+        setError(data.message || "Failed to send reset link");
+      }
+    } catch (err) {
+      setError("Network error: " + err.message);
+    }
   };
 
   return (
