@@ -358,7 +358,8 @@ const FreedomWall = () => {
       <div className="header">
         <h2 className="title">Freedom Wall</h2>
         <p className="description" style={{ textAlign: "center" }}>
-          Anonymous posting enabled. <Link to="/signin">Sign in</Link> to interact with others.
+                   Express yourself freely, share your thoughts, struggles, victories, or uplifting messages with our community.
+
         </p>
       </div>
 

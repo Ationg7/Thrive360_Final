@@ -3,7 +3,7 @@ import { ListGroup, Card, Badge, Button } from 'react-bootstrap';
 import { Bell, CheckCircle, Heart, Bookmark, Calendar } from 'lucide-react';
 import '../App.css'; // 👈 We'll add the modern scrollbar here
 
-const Notifications = () => {
+const Notifications = ({ onUnreadUpdate }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -135,8 +135,9 @@ const Notifications = () => {
 
       <hr className="my-0" />
 
+      {/* Notifications List */}
       {loading ? (
-        <div className="p-3 text-center">Loading...</div>
+        <div className="text-center py-2">Loading...</div>
       ) : (
         <div className="notification-scroll-area">
           <ListGroup variant="flush">
@@ -192,7 +193,7 @@ const Notifications = () => {
           </ListGroup>
         </div>
       )}
-    </Card>
+    </div>
   );
 };
 
